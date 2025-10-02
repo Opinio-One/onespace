@@ -49,20 +49,20 @@ const data = {
       isActive: true,
     },
     {
-      title: "Projects",
+      title: "Catalog",
       url: "#",
       icon: FileText,
       items: [
         {
-          title: "All Projects",
+          title: "Heat Pump",
           url: "#",
         },
         {
-          title: "Recent",
+          title: "Home Battery",
           url: "#",
         },
         {
-          title: "Favorites",
+          title: "Solar Panels",
           url: "#",
         },
       ],
