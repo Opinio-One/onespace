@@ -3,13 +3,11 @@
 import * as React from "react";
 import {
   Calendar,
-  ChevronRight,
   Home,
   Settings,
   User,
   Users,
   FileText,
-  Search,
   Bell,
   HelpCircle,
 } from "lucide-react";
@@ -19,16 +17,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavUser } from "@/components/nav-user";
@@ -143,7 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
