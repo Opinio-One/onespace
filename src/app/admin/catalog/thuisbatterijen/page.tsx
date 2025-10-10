@@ -197,7 +197,13 @@ export default function AdminThuisbatterijenTable() {
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            (window.location.href = `/admin/catalog/thuisbatterijen/edit/${item.Id}`)
+                          }
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
