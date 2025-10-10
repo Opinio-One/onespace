@@ -37,37 +37,44 @@ const data = {
   navMain: [
     {
       title: "Home",
-      url: "#",
+      url: "/",
       icon: Home,
-      isActive: true,
     },
     {
       title: "Catalog",
-      url: "#",
+      url: "/catalog",
       icon: FileText,
       items: [
         {
-          title: "Heat Pump",
-          url: "#",
+          title: "Binnenunits",
+          url: "/catalog/binnenunits",
         },
         {
-          title: "Home Battery",
-          url: "#",
+          title: "Buitenunits",
+          url: "/catalog/buitenunits",
         },
         {
-          title: "Solar Panels",
-          url: "#",
+          title: "Thuisbatterijen",
+          url: "/catalog/thuisbatterijen",
+        },
+        {
+          title: "Omvormers",
+          url: "/catalog/omvormers",
+        },
+        {
+          title: "Zonnepanelen",
+          url: "/catalog/zonnepanelen",
         },
       ],
     },
     {
       title: "Team",
-      url: "#",
+      url: "/team",
       icon: Users,
     },
     {
       title: "Calendar",
-      url: "#",
+      url: "/calendar",
       icon: Calendar,
     },
   ],
