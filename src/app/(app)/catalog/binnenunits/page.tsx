@@ -332,12 +332,6 @@ export default function CatalogPage() {
         <p className="text-gray-600">
           Browse and filter air conditioning indoor units
         </p>
-        <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <p className="text-sm text-yellow-800">
-            <span className="font-medium">Note:</span> Some product images may
-            not display due to expired URLs from the original data source.
-          </p>
-        </div>
       </div>
 
       {/* Filters */}
