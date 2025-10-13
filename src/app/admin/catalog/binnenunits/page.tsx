@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Download, Plus, Edit, Trash2 } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 
 interface Binnenunit {
   id: number;
@@ -44,6 +45,8 @@ export default function AdminBinnenunitsTable() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState<Binnenunit[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchBinnenunits = async () => {
@@ -78,7 +81,18 @@ export default function AdminBinnenunitsTable() {
         item["Serie:"].toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredData(filtered);
+    setCurrentPage(1); // Reset to first page when filtering
   }, [searchTerm, binnenunits]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return (
@@ -155,8 +169,14 @@ export default function AdminBinnenunitsTable() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.id} className="border-b hover:bg-gray-50">
+                {currentData.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() =>
+                      (window.location.href = `/admin/catalog/binnenunits/edit/${item.id}`)
+                    }
+                  >
                     <td className="p-3">{item.id}</td>
                     <td className="p-3">
                       <img
@@ -171,28 +191,45 @@ export default function AdminBinnenunitsTable() {
                           }
                         })()}
                         alt={item.Product}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="w-12 h-12 object-cover rounded-md border"
                         onError={(e) => {
                           e.currentTarget.src = "/placeholder-image.png";
                         }}
                       />
                     </td>
-                    <td className="p-3 font-medium">{item.Product}</td>
-                    <td className="p-3">{item["Merk:"]}</td>
-                    <td className="p-3">{item["Type:"]}</td>
+                    <td className="p-3">
+                      <div className="font-semibold text-gray-900">
+                        {item.Product}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item["Merk:"]}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {item["Type:"]}
+                      </span>
+                    </td>
                     <td className="p-3">{item["Vermogen (kW):"]}</td>
                     <td className="p-3">{item.SEER}</td>
                     <td className="p-3">{item.SCOP}</td>
-                    <td className="p-3">{item.prijs}</td>
+                    <td className="p-3">
+                      <span className="font-medium text-green-600">
+                        {item.prijs}
+                      </span>
+                    </td>
                     <td className="p-3 font-mono text-sm">{item["Serie:"]}</td>
                     <td className="p-3">
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            (window.location.href = `/admin/catalog/binnenunits/edit/${item.id}`)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/admin/catalog/binnenunits/edit/${item.id}`;
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -200,6 +237,7 @@ export default function AdminBinnenunitsTable() {
                           variant="outline"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -216,6 +254,16 @@ export default function AdminBinnenunitsTable() {
               No binnenunits found matching your search.
             </div>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
         </CardContent>
       </Card>
     </div>

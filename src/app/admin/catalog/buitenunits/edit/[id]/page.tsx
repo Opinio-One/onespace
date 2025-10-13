@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save, X } from "lucide-react";
 
 interface Buitenunit {
@@ -53,6 +54,51 @@ interface Buitenunit {
 
 const BRANDS = ["Daikin", "Mitsubishi Heavy Industries", "Sinclair"];
 const SPLIT_TYPES = ["Single-Split", "Multi-Split"];
+const SERIES = [
+  "ASH-09BIS2",
+  "FDC-VNP-W",
+  "MV-E-BI2",
+  "MXM-N",
+  "RXA-(A/B)",
+  "RXJ-A",
+  "RXM-R",
+  "RXP-M",
+  "RXP-N",
+  "SCM-ZS-W",
+  "SOH-BIK",
+  "SOH-BIM",
+  "SOH-BIT",
+  "SRC-ZR-W",
+  "SRC-ZS-W",
+  "SRC-ZSX-W",
+];
+const POWER_CATEGORIES = [
+  "11000-13000",
+  "1500-2200",
+  "2200-2700",
+  "2700-3400",
+  "3400-4200",
+  "4200-4700",
+  "4200-4700,4700-5500",
+  "4700-5500",
+  "5500-6400",
+  "6400-7400",
+  "7400-8600",
+  "8600-11000",
+];
+const PORT_RANGES = [
+  "1",
+  "1 - 2",
+  "1 - 3",
+  "1 - 4",
+  "1 - 5",
+  "2",
+  "2-3",
+  "2-4",
+  "2-5",
+];
+const ELECTRICAL_CONNECTIONS = ["1 Fase"];
+const ENERGY_LABELS = ["A++", "A+++"];
 
 export default function EditBuitenunitPage() {
   const params = useParams();
@@ -180,7 +226,9 @@ export default function EditBuitenunitPage() {
               <Label htmlFor="merk">Brand</Label>
               <Select
                 value={buitenunit["Merk:"]}
-                onValueChange={(value) => handleInputChange("Merk:", value)}
+                onValueChange={(value: string) =>
+                  handleInputChange("Merk:", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select brand" />
@@ -199,7 +247,7 @@ export default function EditBuitenunitPage() {
               <Label htmlFor="split-type">Single/Multi-Split</Label>
               <Select
                 value={buitenunit["Single/Multi-Split"]}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   handleInputChange("Single/Multi-Split", value)
                 }
               >
@@ -218,11 +266,40 @@ export default function EditBuitenunitPage() {
 
             <div>
               <Label htmlFor="serie">Series</Label>
-              <Input
-                id="serie"
+              <Select
                 value={buitenunit["Serie:"]}
-                onChange={(e) => handleInputChange("Serie:", e.target.value)}
-              />
+                onValueChange={(value: string) =>
+                  handleInputChange("Serie:", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select series" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERIES.map((series, index) => (
+                    <SelectItem key={series} value={series}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            index % 6 === 0
+                              ? "bg-blue-500"
+                              : index % 6 === 1
+                              ? "bg-green-500"
+                              : index % 6 === 2
+                              ? "bg-purple-500"
+                              : index % 6 === 3
+                              ? "bg-orange-500"
+                              : index % 6 === 4
+                              ? "bg-pink-500"
+                              : "bg-cyan-500"
+                          }`}
+                        />
+                        {series}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -309,6 +386,44 @@ export default function EditBuitenunitPage() {
                 }
               />
             </div>
+
+            <div>
+              <Label htmlFor="vermogen-categorie">Power Category</Label>
+              <Select
+                value={buitenunit["Vermogen categorie"]}
+                onValueChange={(value: string) =>
+                  handleInputChange("Vermogen categorie", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select power category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {POWER_CATEGORIES.map((category, index) => (
+                    <SelectItem key={category} value={category}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            index % 6 === 0
+                              ? "bg-red-500"
+                              : index % 6 === 1
+                              ? "bg-yellow-500"
+                              : index % 6 === 2
+                              ? "bg-indigo-500"
+                              : index % 6 === 3
+                              ? "bg-teal-500"
+                              : index % 6 === 4
+                              ? "bg-rose-500"
+                              : "bg-lime-500"
+                          }`}
+                        />
+                        {category}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -333,26 +448,64 @@ export default function EditBuitenunitPage() {
 
             <div>
               <Label htmlFor="aantal-poorten">Number of Ports (Min-Max)</Label>
-              <Input
-                id="aantal-poorten"
+              <Select
                 value={buitenunit["Aantal poorten Min-Max:"]}
-                onChange={(e) =>
-                  handleInputChange("Aantal poorten Min-Max:", e.target.value)
+                onValueChange={(value: string) =>
+                  handleInputChange("Aantal poorten Min-Max:", value)
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select port range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PORT_RANGES.map((range, index) => (
+                    <SelectItem key={range} value={range}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            index % 5 === 0
+                              ? "bg-emerald-500"
+                              : index % 5 === 1
+                              ? "bg-violet-500"
+                              : index % 5 === 2
+                              ? "bg-amber-500"
+                              : index % 5 === 3
+                              ? "bg-sky-500"
+                              : "bg-fuchsia-500"
+                          }`}
+                        />
+                        {range}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <Label htmlFor="electrische-aansluiting">
                 Electrical Connection
               </Label>
-              <Input
-                id="electrische-aansluiting"
+              <Select
                 value={buitenunit["Electrische aansluiting:"]}
-                onChange={(e) =>
-                  handleInputChange("Electrische aansluiting:", e.target.value)
+                onValueChange={(value: string) =>
+                  handleInputChange("Electrische aansluiting:", value)
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select electrical connection" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ELECTRICAL_CONNECTIONS.map((connection, index) => (
+                    <SelectItem key={connection} value={connection}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-slate-500" />
+                        {connection}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -416,50 +569,110 @@ export default function EditBuitenunitPage() {
 
             <div>
               <Label htmlFor="energielabel">Cooling Energy Label</Label>
-              <Input
-                id="energielabel"
+              <Select
                 value={buitenunit["Energielabel koelen:"]}
-                onChange={(e) =>
-                  handleInputChange("Energielabel koelen:", e.target.value)
+                onValueChange={(value: string) =>
+                  handleInputChange("Energielabel koelen:", value)
                 }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select energy label" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ENERGY_LABELS.map((label, index) => (
+                    <SelectItem key={label} value={label}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            index === 0 ? "bg-green-500" : "bg-blue-500"
+                          }`}
+                        />
+                        {label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <FileUpload
+                label="Outdoor Unit Photo"
+                currentFile={(() => {
+                  try {
+                    const images = JSON.parse(
+                      buitenunit["Foto buitenunit:"] || "[]"
+                    );
+                    const result = images[0];
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = buitenunit["Foto buitenunit:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Foto buitenunit:", newValue);
+                }}
+                fileType="foto_buitenunit"
+                productId={buitenunit.Id.toString()}
+                tableName="buitenunits"
+                accept="image/*"
+                maxSize={5}
               />
             </div>
 
             <div>
-              <Label htmlFor="foto-buitenunit">Outdoor Unit Photo URL</Label>
-              <Input
-                id="foto-buitenunit"
-                value={buitenunit["Foto buitenunit:"]}
-                onChange={(e) =>
-                  handleInputChange("Foto buitenunit:", e.target.value)
-                }
-                placeholder="Enter image URL or JSON array"
+              <FileUpload
+                label="Logo"
+                currentFile={(() => {
+                  try {
+                    const logo = JSON.parse(buitenunit["Logo:"] || "[]");
+                    const result = Array.isArray(logo) ? logo[0] : logo;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = buitenunit["Logo:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Logo:", newValue);
+                }}
+                fileType="logo"
+                productId={buitenunit.Id.toString()}
+                tableName="buitenunits"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={buitenunit["Logo:"]}
-                onChange={(e) => handleInputChange("Logo:", e.target.value)}
-                placeholder="Enter logo URL"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="datasheet">Datasheet</Label>
-              <Textarea
-                id="datasheet"
-                value={
-                  typeof buitenunit["Datasheet:"] === "string"
-                    ? buitenunit["Datasheet:"]
-                    : JSON.stringify(buitenunit["Datasheet:"])
-                }
-                onChange={(e) =>
-                  handleInputChange("Datasheet:", e.target.value)
-                }
-                placeholder="Enter datasheet URL or JSON"
+              <FileUpload
+                label="Datasheet"
+                currentFile={(() => {
+                  try {
+                    const datasheet = JSON.parse(
+                      buitenunit["Datasheet:"] || "[]"
+                    );
+                    const result = Array.isArray(datasheet)
+                      ? datasheet[0]
+                      : datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = buitenunit["Datasheet:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Datasheet:", newValue);
+                }}
+                fileType="datasheet"
+                productId={buitenunit.Id.toString()}
+                tableName="buitenunits"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
               />
             </div>
           </CardContent>

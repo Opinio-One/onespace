@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save, X } from "lucide-react";
 
 interface Zonnepaneel {
@@ -67,7 +68,16 @@ const BRANDS = [
   "REC Solar",
   "TW Solar",
 ];
+
+const CELTECHNOLOGIE_TYPES = ["N-Type ABC", "N-Type HJT", "N-Type TOPCon"];
+
+const BI_FACIAL_OPTIONS = ["Ja", "Nee"];
+
+const GLAS_TYPES = ["Glas-folie", "Glas-glas"];
+
 const CELL_TYPES = ["Half-cell"];
+
+const CELMATERIAAL_OPTIONS = ["Monokristallijn"];
 
 export default function EditZonnepaneelPage() {
   const params = useParams();
@@ -346,31 +356,75 @@ export default function EditZonnepaneelPage() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="celtechnologie">Cell Technology Type</Label>
-              <Input
-                id="celtechnologie"
+              <Select
                 value={zonnepaneel["Celtechnologie type"]}
-                onChange={(e) =>
-                  handleInputChange("Celtechnologie type", e.target.value)
+                onValueChange={(value) =>
+                  handleInputChange("Celtechnologie type", value)
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select cell technology type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CELTECHNOLOGIE_TYPES.map((type) => (
+                    <SelectItem
+                      key={type}
+                      value={type}
+                      className="text-blue-600"
+                    >
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <Label htmlFor="bi-facial">Bi-Facial</Label>
-              <Input
-                id="bi-facial"
+              <Select
                 value={zonnepaneel["Bi-Facial"]}
-                onChange={(e) => handleInputChange("Bi-Facial", e.target.value)}
-              />
+                onValueChange={(value) => handleInputChange("Bi-Facial", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select bi-facial option" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BI_FACIAL_OPTIONS.map((option) => (
+                    <SelectItem
+                      key={option}
+                      value={option}
+                      className={
+                        option === "Ja" ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <Label htmlFor="glas-type">Glass Type</Label>
-              <Input
-                id="glas-type"
+              <Select
                 value={zonnepaneel["Glas type"]}
-                onChange={(e) => handleInputChange("Glas type", e.target.value)}
-              />
+                onValueChange={(value) => handleInputChange("Glas type", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select glass type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GLAS_TYPES.map((type) => (
+                    <SelectItem
+                      key={type}
+                      value={type}
+                      className="text-purple-600"
+                    >
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -384,13 +438,27 @@ export default function EditZonnepaneelPage() {
 
             <div>
               <Label htmlFor="celmateriaal">Cell Material</Label>
-              <Input
-                id="celmateriaal"
+              <Select
                 value={zonnepaneel.Celmateriaal}
-                onChange={(e) =>
-                  handleInputChange("Celmateriaal", e.target.value)
+                onValueChange={(value) =>
+                  handleInputChange("Celmateriaal", value)
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select cell material" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CELMATERIAAL_OPTIONS.map((material) => (
+                    <SelectItem
+                      key={material}
+                      value={material}
+                      className="text-orange-600"
+                    >
+                      {material}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -590,34 +658,79 @@ export default function EditZonnepaneelPage() {
             </div>
 
             <div>
-              <Label htmlFor="afbeelding">Image URL</Label>
-              <Input
-                id="afbeelding"
-                value={zonnepaneel.Afbeelding}
-                onChange={(e) =>
-                  handleInputChange("Afbeelding", e.target.value)
-                }
-                placeholder="Enter image URL or JSON array"
+              <FileUpload
+                label="Product Image"
+                currentFile={(() => {
+                  try {
+                    const images = JSON.parse(zonnepaneel.Afbeelding || "[]");
+                    const result = images[0];
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = zonnepaneel.Afbeelding;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Afbeelding", newValue);
+                }}
+                fileType="afbeelding"
+                productId={zonnepaneel.Id.toString()}
+                tableName="zonnepanelen"
+                accept="image/*"
+                maxSize={5}
               />
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={zonnepaneel.Logo}
-                onChange={(e) => handleInputChange("Logo", e.target.value)}
-                placeholder="Enter logo URL"
+              <FileUpload
+                label="Logo"
+                currentFile={(() => {
+                  try {
+                    const logo = JSON.parse(zonnepaneel.Logo || "[]");
+                    const result = Array.isArray(logo) ? logo[0] : logo;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = zonnepaneel.Logo;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Logo", newValue);
+                }}
+                fileType="logo"
+                productId={zonnepaneel.Id.toString()}
+                tableName="zonnepanelen"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="datasheet">Datasheet</Label>
-              <Textarea
-                id="datasheet"
-                value={zonnepaneel.Datasheet}
-                onChange={(e) => handleInputChange("Datasheet", e.target.value)}
-                placeholder="Enter datasheet URL"
+              <FileUpload
+                label="Datasheet"
+                currentFile={(() => {
+                  try {
+                    const datasheet = JSON.parse(zonnepaneel.Datasheet || "[]");
+                    const result = Array.isArray(datasheet)
+                      ? datasheet[0]
+                      : datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = zonnepaneel.Datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Datasheet", newValue);
+                }}
+                fileType="datasheet"
+                productId={zonnepaneel.Id.toString()}
+                tableName="zonnepanelen"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
               />
             </div>
           </CardContent>

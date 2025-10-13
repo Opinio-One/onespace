@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save, X } from "lucide-react";
 
 interface Thuisbatterij {
@@ -537,40 +538,81 @@ export default function EditThuisbatterijPage() {
             </div>
 
             <div>
-              <Label htmlFor="afbeelding">Image URL</Label>
-              <Input
-                id="afbeelding"
-                value={thuisbatterij.Afbeelding}
-                onChange={(e) =>
-                  handleInputChange("Afbeelding", e.target.value)
-                }
-                placeholder="Enter image URL or JSON array"
+              <FileUpload
+                label="Product Image"
+                currentFile={(() => {
+                  try {
+                    const images = JSON.parse(thuisbatterij.Afbeelding || "[]");
+                    const result = images[0];
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = thuisbatterij.Afbeelding;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Afbeelding", newValue);
+                }}
+                fileType="afbeelding"
+                productId={thuisbatterij.Id.toString()}
+                tableName="thuisbatterijen"
+                accept="image/*"
+                maxSize={5}
               />
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={thuisbatterij.Logo}
-                onChange={(e) => handleInputChange("Logo", e.target.value)}
-                placeholder="Enter logo URL"
+              <FileUpload
+                label="Logo"
+                currentFile={(() => {
+                  try {
+                    const logo = JSON.parse(thuisbatterij.Logo || "[]");
+                    const result = Array.isArray(logo) ? logo[0] : logo;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = thuisbatterij.Logo;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Logo", newValue);
+                }}
+                fileType="logo"
+                productId={thuisbatterij.Id.toString()}
+                tableName="thuisbatterijen"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="datasheet">Datasheet</Label>
-              <Textarea
-                id="datasheet"
-                value={
-                  Array.isArray(thuisbatterij.Datasheet)
-                    ? thuisbatterij.Datasheet.join("\n")
-                    : thuisbatterij.Datasheet
-                }
-                onChange={(e) =>
-                  handleInputChange("Datasheet", e.target.value.split("\n"))
-                }
-                placeholder="Enter datasheet URLs (one per line)"
+              <FileUpload
+                label="Datasheet"
+                currentFile={(() => {
+                  try {
+                    const datasheet = JSON.parse(
+                      thuisbatterij.Datasheet || "[]"
+                    );
+                    const result = Array.isArray(datasheet)
+                      ? datasheet[0]
+                      : datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = thuisbatterij.Datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Datasheet", newValue);
+                }}
+                fileType="datasheet"
+                productId={thuisbatterij.Id.toString()}
+                tableName="thuisbatterijen"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
               />
             </div>
           </CardContent>

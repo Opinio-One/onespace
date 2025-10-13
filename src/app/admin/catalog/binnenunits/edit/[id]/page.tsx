@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save, X } from "lucide-react";
 
 interface Binnenunit {
@@ -385,52 +386,108 @@ export default function EditBinnenunitPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="foto-unit">Unit Photo URL</Label>
-              <Input
-                id="foto-unit"
-                value={binnenunit["Foto unit:"]}
-                onChange={(e) =>
-                  handleInputChange("Foto unit:", e.target.value)
-                }
-                placeholder="Enter image URL or JSON array"
+              <FileUpload
+                label="Unit Photo"
+                currentFile={(() => {
+                  try {
+                    const images = JSON.parse(binnenunit["Foto unit:"] || "[]");
+                    const result = images[0];
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = binnenunit["Foto unit:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Foto unit:", newValue);
+                }}
+                fileType="foto_unit"
+                productId={binnenunit.id.toString()}
+                tableName="binnenunits"
+                accept="image/*"
+                maxSize={5}
               />
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={binnenunit["Logo:"]}
-                onChange={(e) => handleInputChange("Logo:", e.target.value)}
-                placeholder="Enter logo URL"
+              <FileUpload
+                label="Logo"
+                currentFile={(() => {
+                  try {
+                    const logo = JSON.parse(binnenunit["Logo:"] || "[]");
+                    const result = Array.isArray(logo) ? logo[0] : logo;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = binnenunit["Logo:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Logo:", newValue);
+                }}
+                fileType="logo"
+                productId={binnenunit.id.toString()}
+                tableName="binnenunits"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="kleur-voorbeeld">Color Example URL</Label>
-              <Input
-                id="kleur-voorbeeld"
-                value={binnenunit["Kleur voorbeeld:"]}
-                onChange={(e) =>
-                  handleInputChange("Kleur voorbeeld:", e.target.value)
-                }
-                placeholder="Enter color example URL"
+              <FileUpload
+                label="Color Example"
+                currentFile={(() => {
+                  try {
+                    const kleur = JSON.parse(
+                      binnenunit["Kleur voorbeeld:"] || "[]"
+                    );
+                    const result = Array.isArray(kleur) ? kleur[0] : kleur;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = binnenunit["Kleur voorbeeld:"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Kleur voorbeeld:", newValue);
+                }}
+                fileType="kleur_voorbeeld"
+                productId={binnenunit.id.toString()}
+                tableName="binnenunits"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="datasheet">Datasheet/Brochure</Label>
-              <Textarea
-                id="datasheet"
-                value={
-                  typeof binnenunit["Datasheet/Brochure"] === "string"
-                    ? binnenunit["Datasheet/Brochure"]
-                    : JSON.stringify(binnenunit["Datasheet/Brochure"])
-                }
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleInputChange("Datasheet/Brochure", e.target.value)
-                }
-                placeholder="Enter datasheet URL or JSON"
+              <FileUpload
+                label="Datasheet/Brochure"
+                currentFile={(() => {
+                  try {
+                    const datasheet = JSON.parse(
+                      binnenunit["Datasheet/Brochure"] || "[]"
+                    );
+                    const result = Array.isArray(datasheet)
+                      ? datasheet[0]
+                      : datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = binnenunit["Datasheet/Brochure"];
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Datasheet/Brochure", newValue);
+                }}
+                fileType="datasheet_brochure"
+                productId={binnenunit.id.toString()}
+                tableName="binnenunits"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
               />
             </div>
           </CardContent>

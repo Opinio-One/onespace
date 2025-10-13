@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Download, Plus, Edit, Trash2 } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 
 interface Thuisbatterij {
   Id: number;
@@ -50,6 +51,8 @@ export default function AdminThuisbatterijenTable() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState<Thuisbatterij[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchThuisbatterijen = async () => {
@@ -84,7 +87,18 @@ export default function AdminThuisbatterijenTable() {
         item["Product code"].toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredData(filtered);
+    setCurrentPage(1); // Reset to first page when filtering
   }, [searchTerm, thuisbatterijen]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return (
@@ -162,8 +176,14 @@ export default function AdminThuisbatterijenTable() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.Id} className="border-b hover:bg-gray-50">
+                {currentData.map((item) => (
+                  <tr
+                    key={item.Id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() =>
+                      (window.location.href = `/admin/catalog/thuisbatterijen/edit/${item.Id}`)
+                    }
+                  >
                     <td className="p-3">{item.Id}</td>
                     <td className="p-3">
                       <img
@@ -176,22 +196,38 @@ export default function AdminThuisbatterijenTable() {
                           }
                         })()}
                         alt={item.Product}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="w-12 h-12 object-cover rounded-md border"
                         onError={(e) => {
                           e.currentTarget.src = "/placeholder-image.png";
                         }}
                       />
                     </td>
-                    <td className="p-3 font-medium">{item.Product}</td>
-                    <td className="p-3">{item.Merk}</td>
-                    <td className="p-3">{item["Soort batterij"]}</td>
+                    <td className="p-3">
+                      <div className="font-semibold text-gray-900">
+                        {item.Product}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item.Merk}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {item["Soort batterij"]}
+                      </span>
+                    </td>
                     <td className="p-3">{item["Batterij Capaciteit (kWh)"]}</td>
                     <td className="p-3">{item["Ontladingsvermogen (kW)"]}</td>
                     <td className="p-3">
                       {item["Batterij Voltage (Vdc/Vac)"]}
                     </td>
                     <td className="p-3">{item["Cyclus levensduur bij 25℃"]}</td>
-                    <td className="p-3">{item.Prijs}</td>
+                    <td className="p-3">
+                      <span className="font-medium text-green-600">
+                        {item.Prijs}
+                      </span>
+                    </td>
                     <td className="p-3 font-mono text-sm">
                       {item["Product code"]}
                     </td>
@@ -200,9 +236,10 @@ export default function AdminThuisbatterijenTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            (window.location.href = `/admin/catalog/thuisbatterijen/edit/${item.Id}`)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/admin/catalog/thuisbatterijen/edit/${item.Id}`;
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -210,6 +247,7 @@ export default function AdminThuisbatterijenTable() {
                           variant="outline"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -226,6 +264,16 @@ export default function AdminThuisbatterijenTable() {
               No thuisbatterijen found matching your search.
             </div>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
         </CardContent>
       </Card>
     </div>

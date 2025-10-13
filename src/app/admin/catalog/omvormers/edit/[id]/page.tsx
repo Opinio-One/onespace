@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { ArrowLeft, Save, X } from "lucide-react";
 
 interface Omvormer {
@@ -34,7 +36,7 @@ interface Omvormer {
   "Aantal fases": string;
   MPPTs: number;
   "Strings per MPPT": number;
-  "PV WP": string;
+  "PV WP": string | string[];
   Strings: number;
   Price: string;
   Cost: string;
@@ -50,6 +52,29 @@ const INVERTER_TYPES = [
   "Hybride omvormer",
   "Micro-omvormer",
   "String omvormer",
+];
+const PHASES = ["1-fase", "3-fase", "Beiden mogelijk"];
+const PV_WP_RANGES = [
+  "1000-1800",
+  "11000-13000",
+  "13000-16000",
+  "16000-18500",
+  "1800-2500",
+  "18500-21000",
+  "21000-24000",
+  "24000-27000",
+  "2500-2800",
+  "27000-30000",
+  "2800-3200",
+  "33000-36000",
+  "3700-4300",
+  "4300-4800",
+  "4800-5200",
+  "5600-6400",
+  "6400-7400",
+  "7400-8400",
+  "8400-11000",
+  "NVT",
 ];
 
 export default function EditOmvormerPage() {
@@ -77,7 +102,14 @@ export default function EditOmvormerPage() {
       if (error) {
         console.error("Error fetching omvormer:", error);
       } else {
-        setOmvormer(data);
+        // Parse PV WP from comma-separated string to array
+        const parsedData = {
+          ...data,
+          "PV WP": data["PV WP"]
+            ? data["PV WP"].split(",").map((item) => item.trim())
+            : [],
+        };
+        setOmvormer(parsedData);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -92,9 +124,18 @@ export default function EditOmvormerPage() {
     setSaving(true);
     try {
       const supabase = createClient();
+
+      // Convert PV WP array back to comma-separated string
+      const dataToSave = {
+        ...omvormer,
+        "PV WP": Array.isArray(omvormer["PV WP"])
+          ? omvormer["PV WP"].join(", ")
+          : omvormer["PV WP"],
+      };
+
       const { error } = await supabase
         .from("Omvormers")
-        .update(omvormer)
+        .update(dataToSave)
         .eq("Id", params.id);
 
       if (error) {
@@ -111,7 +152,10 @@ export default function EditOmvormerPage() {
     }
   };
 
-  const handleInputChange = (field: keyof Omvormer, value: string | number) => {
+  const handleInputChange = (
+    field: keyof Omvormer,
+    value: string | number | string[]
+  ) => {
     if (omvormer) {
       setOmvormer({ ...omvormer, [field]: value });
     }
@@ -175,7 +219,9 @@ export default function EditOmvormerPage() {
               <Label htmlFor="merk">Brand</Label>
               <Select
                 value={omvormer.Merk}
-                onValueChange={(value) => handleInputChange("Merk", value)}
+                onValueChange={(value: string) =>
+                  handleInputChange("Merk", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select brand" />
@@ -194,7 +240,7 @@ export default function EditOmvormerPage() {
               <Label htmlFor="type">Inverter Type</Label>
               <Select
                 value={omvormer["Type omvormer"]}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   handleInputChange("Type omvormer", value)
                 }
               >
@@ -222,13 +268,34 @@ export default function EditOmvormerPage() {
 
             <div>
               <Label htmlFor="aantal-fases">Number of Phases</Label>
-              <Input
-                id="aantal-fases"
+              <Select
                 value={omvormer["Aantal fases"]}
-                onChange={(e) =>
-                  handleInputChange("Aantal fases", e.target.value)
+                onValueChange={(value: string) =>
+                  handleInputChange("Aantal fases", value)
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select number of phases" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PHASES.map((phase, index) => (
+                    <SelectItem key={phase} value={phase}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            index === 0
+                              ? "bg-blue-500"
+                              : index === 1
+                              ? "bg-green-500"
+                              : "bg-purple-500"
+                          }`}
+                        />
+                        {phase}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -295,10 +362,15 @@ export default function EditOmvormerPage() {
 
             <div>
               <Label htmlFor="pv-wp">PV WP</Label>
-              <Input
-                id="pv-wp"
-                value={omvormer["PV WP"]}
-                onChange={(e) => handleInputChange("PV WP", e.target.value)}
+              <MultiSelect
+                options={PV_WP_RANGES}
+                value={
+                  Array.isArray(omvormer["PV WP"]) ? omvormer["PV WP"] : []
+                }
+                onChange={(value: string[]) =>
+                  handleInputChange("PV WP", value)
+                }
+                placeholder="Select PV WP ranges"
               />
             </div>
           </CardContent>
@@ -363,38 +435,79 @@ export default function EditOmvormerPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="afbeelding">Image URL</Label>
-              <Input
-                id="afbeelding"
-                value={omvormer.Afbeelding}
-                onChange={(e) =>
-                  handleInputChange("Afbeelding", e.target.value)
-                }
-                placeholder="Enter image URL or JSON array"
+              <FileUpload
+                label="Product Image"
+                currentFile={(() => {
+                  try {
+                    const images = JSON.parse(omvormer.Afbeelding || "[]");
+                    const result = images[0];
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = omvormer.Afbeelding;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Afbeelding", newValue);
+                }}
+                fileType="afbeelding"
+                productId={omvormer.Id.toString()}
+                tableName="omvormers"
+                accept="image/*"
+                maxSize={5}
               />
             </div>
 
             <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={omvormer.Logo}
-                onChange={(e) => handleInputChange("Logo", e.target.value)}
-                placeholder="Enter logo URL"
+              <FileUpload
+                label="Logo"
+                currentFile={(() => {
+                  try {
+                    const logo = JSON.parse(omvormer.Logo || "[]");
+                    const result = Array.isArray(logo) ? logo[0] : logo;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = omvormer.Logo;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Logo", newValue);
+                }}
+                fileType="logo"
+                productId={omvormer.Id.toString()}
+                tableName="omvormers"
+                accept="image/*"
+                maxSize={2}
               />
             </div>
 
             <div>
-              <Label htmlFor="datasheet">Datasheet</Label>
-              <Textarea
-                id="datasheet"
-                value={
-                  typeof omvormer.Datasheet === "string"
-                    ? omvormer.Datasheet
-                    : JSON.stringify(omvormer.Datasheet)
-                }
-                onChange={(e) => handleInputChange("Datasheet", e.target.value)}
-                placeholder="Enter datasheet URL or JSON"
+              <FileUpload
+                label="Datasheet"
+                currentFile={(() => {
+                  try {
+                    const datasheet = JSON.parse(omvormer.Datasheet || "[]");
+                    const result = Array.isArray(datasheet)
+                      ? datasheet[0]
+                      : datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  } catch {
+                    const result = omvormer.Datasheet;
+                    return typeof result === "string" ? result : undefined;
+                  }
+                })()}
+                onFileChange={(url) => {
+                  const newValue = url ? JSON.stringify([url]) : "";
+                  handleInputChange("Datasheet", newValue);
+                }}
+                fileType="datasheet"
+                productId={omvormer.Id.toString()}
+                tableName="omvormers"
+                accept=".pdf,.doc,.docx"
+                maxSize={10}
               />
             </div>
           </CardContent>

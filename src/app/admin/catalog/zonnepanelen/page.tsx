@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Download, Plus, Edit, Trash2 } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 
 interface Zonnepaneel {
   Id: number;
@@ -54,6 +55,8 @@ export default function AdminZonnepanelenTable() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState<Zonnepaneel[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchZonnepanelen = async () => {
@@ -88,7 +91,18 @@ export default function AdminZonnepanelenTable() {
         item["Product code"].toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredData(filtered);
+    setCurrentPage(1); // Reset to first page when filtering
   }, [searchTerm, zonnepanelen]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return (
@@ -166,8 +180,14 @@ export default function AdminZonnepanelenTable() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.Id} className="border-b hover:bg-gray-50">
+                {currentData.map((item) => (
+                  <tr
+                    key={item.Id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() =>
+                      (window.location.href = `/admin/catalog/zonnepanelen/edit/${item.Id}`)
+                    }
+                  >
                     <td className="p-3">{item.Id}</td>
                     <td className="p-3">
                       <img
@@ -180,15 +200,27 @@ export default function AdminZonnepanelenTable() {
                           }
                         })()}
                         alt={item.Product}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="w-12 h-12 object-cover rounded-md border"
                         onError={(e) => {
                           e.currentTarget.src = "/placeholder-image.png";
                         }}
                       />
                     </td>
-                    <td className="p-3 font-medium">{item.Product}</td>
-                    <td className="p-3">{item.Merk}</td>
-                    <td className="p-3">{item["Cell type"]}</td>
+                    <td className="p-3">
+                      <div className="font-semibold text-gray-900">
+                        {item.Product}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item.Merk}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {item["Cell type"]}
+                      </span>
+                    </td>
                     <td className="p-3">{item["Vermogen (Wp)"]}</td>
                     <td className="p-3">
                       {item["Lengte (mm)"]}x{item["Breedte (mm)"]}x
@@ -196,7 +228,11 @@ export default function AdminZonnepanelenTable() {
                     </td>
                     <td className="p-3">{item["Gewicht (kg)"]}</td>
                     <td className="p-3">{item["Productgarantie (jaren)"]}</td>
-                    <td className="p-3">{item["Verkoopprijs paneel"]}</td>
+                    <td className="p-3">
+                      <span className="font-medium text-green-600">
+                        {item["Verkoopprijs paneel"]}
+                      </span>
+                    </td>
                     <td className="p-3 font-mono text-sm">
                       {item["Product code"]}
                     </td>
@@ -205,9 +241,10 @@ export default function AdminZonnepanelenTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            (window.location.href = `/admin/catalog/zonnepanelen/edit/${item.Id}`)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/admin/catalog/zonnepanelen/edit/${item.Id}`;
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -215,6 +252,7 @@ export default function AdminZonnepanelenTable() {
                           variant="outline"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -231,6 +269,16 @@ export default function AdminZonnepanelenTable() {
               No zonnepanelen found matching your search.
             </div>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+          />
         </CardContent>
       </Card>
     </div>
