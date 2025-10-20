@@ -1,9 +1,14 @@
 import { AdminSidebarLayout } from "@/components/admin-sidebar-layout";
+import { AdminGuard } from "@/components/admin-guard";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminSidebarLayout>{children}</AdminSidebarLayout>;
+  return (
+    <AdminGuard>
+      <AdminSidebarLayout>{children}</AdminSidebarLayout>
+    </AdminGuard>
+  );
 }

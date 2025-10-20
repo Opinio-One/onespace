@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,33 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, user, profile, loading: authLoading } = useAuth();
+
+  // Handle redirect after successful authentication
+  useEffect(() => {
+    console.log("Login redirect effect:", {
+      user: !!user,
+      profile,
+      authLoading,
+    });
+
+    if (user && !authLoading) {
+      // If we have a user but no profile yet, wait a bit for profile to load
+      if (!profile) {
+        console.log(
+          "User authenticated but profile not loaded yet, waiting..."
+        );
+        return;
+      }
+
+      console.log("Redirecting based on admin status:", profile.is_admin);
+      if (profile.is_admin) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [user, profile, authLoading, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +62,8 @@ export function LoginForm({
       const { error } = await signIn(email, password);
       if (error) {
         setError(error);
-      } else {
-        router.push("/");
-        router.refresh();
       }
+      // Redirect is handled by useEffect
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -56,6 +80,7 @@ export function LoginForm({
       if (error) {
         setError(error.message);
       }
+      // Redirect is handled by useEffect
     } catch {
       setError("An unexpected error occurred");
     } finally {
