@@ -42,7 +42,7 @@ const FILTER_CONFIG = [
     type: "multiselect" as const,
   },
   {
-    field: "Prijs (EUR)",
+    field: "Prijs_EUR",
     label: "Price (EUR)",
     type: "range" as const,
   },
@@ -188,12 +188,12 @@ export default function ZonnepanelenPage() {
               </Badge>
             </div>
 
-            {panel["Prijs (EUR)"] && (
+            {panel["Prijs_EUR"] && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {panel["Prijs (EUR)"].toLocaleString("nl-NL", {
+                  {panel["Prijs_EUR"].toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

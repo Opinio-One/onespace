@@ -13,7 +13,7 @@ const FILTERABLE_FIELDS = [
   "Kleur:",
   "Smart-Functies",
 ];
-const RANGE_FILTER_FIELDS = ["Prijs (EUR)", "SEER", "SCOP"];
+const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP"];
 
 export async function GET(request: Request) {
   try {

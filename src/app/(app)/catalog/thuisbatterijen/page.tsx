@@ -37,7 +37,7 @@ const FILTER_CONFIG = [
     label: "Composition",
     type: "multiselect" as const,
   },
-  { field: "Prijs (EUR)", label: "Price (EUR)", type: "range" as const },
+  { field: "Prijs_EUR", label: "Price (EUR)", type: "range" as const },
   {
     field: "Batterij Capaciteit (kWh)",
     label: "Capacity (kWh)",
@@ -167,12 +167,12 @@ export default function ThuisbatterijenPage() {
               </Badge>
             </div>
 
-            {battery["Prijs (EUR)"] && (
+            {battery["Prijs_EUR"] && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {battery["Prijs (EUR)"].toLocaleString("nl-NL", {
+                  {battery["Prijs_EUR"].toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

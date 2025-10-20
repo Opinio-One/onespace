@@ -14,7 +14,7 @@ const FILTERABLE_FIELDS = [
   "Celmateriaal",
 ];
 const RANGE_FILTER_FIELDS = [
-  "Prijs (EUR)",
+  "Prijs_EUR",
   "Vermogen (Wp)",
   "Productgarantie (jaren)",
 ];

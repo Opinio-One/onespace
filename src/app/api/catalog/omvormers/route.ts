@@ -6,7 +6,7 @@ import type { Omvormer } from "@/types/catalog";
 const SEARCHABLE_FIELDS = ["Name", "Merk", "SKU"];
 const FILTERABLE_FIELDS = ["Merk", "Type omvormer", "Aantal fases"];
 const RANGE_FILTER_FIELDS = [
-  "Prijs (EUR)",
+  "Prijs_EUR",
   "Vermogen",
   "MPPTs",
   "Garantie (jaren)",

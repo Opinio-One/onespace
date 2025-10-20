@@ -33,7 +33,7 @@ const FILTER_CONFIG = [
     label: "Cooling Energy Label",
     type: "multiselect" as const,
   },
-  { field: "Prijs (EUR)", label: "Price (EUR)", type: "range" as const },
+  { field: "Prijs_EUR", label: "Price (EUR)", type: "range" as const },
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
   {
@@ -164,12 +164,12 @@ export default function BuitenunitsPage() {
               </Badge>
             </div>
 
-            {unit["Prijs (EUR)"] && (
+            {unit["Prijs_EUR"] && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {unit["Prijs (EUR)"].toLocaleString("nl-NL", {
+                  {unit["Prijs_EUR"].toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

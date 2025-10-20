@@ -303,7 +303,8 @@ export function CatalogGrid<T>({
                           disabled={loading}
                           formatValue={
                             field.toLowerCase().includes("prijs") ||
-                            field.toLowerCase().includes("price")
+                            field.toLowerCase().includes("price") ||
+                            field === "Prijs_EUR"
                               ? (v) =>
                                   `€${v.toLocaleString("nl-NL", {
                                     minimumFractionDigits: 0,

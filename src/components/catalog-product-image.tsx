@@ -37,7 +37,7 @@ export function ProductImage({
       <img
         src={imageUrl}
         alt={productName}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain p-4"
         onLoad={() => setImageLoading(false)}
         onError={() => {
           setImageError(true);

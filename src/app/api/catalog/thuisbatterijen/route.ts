@@ -12,7 +12,7 @@ const FILTERABLE_FIELDS = [
   "Samenstelling",
 ];
 const RANGE_FILTER_FIELDS = [
-  "Prijs (EUR)",
+  "Prijs_EUR",
   "Batterij Capaciteit (kWh)",
   "Ontladingsvermogen (kW)",
 ];
