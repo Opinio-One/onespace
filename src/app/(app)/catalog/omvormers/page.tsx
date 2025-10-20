@@ -25,6 +25,7 @@ const FILTER_CONFIG = [
     type: "multiselect" as const,
   },
   { field: "Aantal fases", label: "Phases", type: "multiselect" as const },
+  { field: "Prijs (EUR)", label: "Price (EUR)", type: "range" as const },
   { field: "Vermogen", label: "Power (kW)", type: "range" as const },
   { field: "MPPTs", label: "MPPTs", type: "range" as const },
   {
@@ -151,11 +152,15 @@ export default function OmvormersPage() {
               </Badge>
             </div>
 
-            {omvormer.Price && (
+            {omvormer["Prijs (EUR)"] && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
-                  {omvormer.Price}
+                  €
+                  {omvormer["Prijs (EUR)"].toLocaleString("nl-NL", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}

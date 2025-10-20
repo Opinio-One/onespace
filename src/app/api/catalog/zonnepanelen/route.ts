@@ -13,7 +13,11 @@ const FILTERABLE_FIELDS = [
   "Glas-glas",
   "Celmateriaal",
 ];
-const RANGE_FILTER_FIELDS = ["Vermogen (Wp)", "Productgarantie (jaren)"];
+const RANGE_FILTER_FIELDS = [
+  "Prijs (EUR)",
+  "Vermogen (Wp)",
+  "Productgarantie (jaren)",
+];
 
 export async function GET(request: Request) {
   try {

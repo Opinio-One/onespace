@@ -47,22 +47,43 @@ export async function getCatalogItems<T>(
     query = query.or(searchConditions);
   }
 
+  // Collect price filters to apply client-side (PostgREST doesn't handle field names with parentheses)
+  const clientSideFilters: Record<string, any> = {};
+
   // Apply filters
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       // Handle range filters (min/max)
       if (key.endsWith("_min")) {
         const field = key.replace("_min", "");
-        query = query.gte(field, value);
+        // Skip price filters with special characters - handle client-side
+        if (field.includes("(") || field.includes(")")) {
+          clientSideFilters[key] = value;
+        } else {
+          query = query.gte(field, value);
+        }
       } else if (key.endsWith("_max")) {
         const field = key.replace("_max", "");
-        query = query.lte(field, value);
+        // Skip price filters with special characters - handle client-side
+        if (field.includes("(") || field.includes(")")) {
+          clientSideFilters[key] = value;
+        } else {
+          query = query.lte(field, value);
+        }
       } else if (Array.isArray(value) && value.length > 0) {
         // Multiple values - use 'in' operator
-        query = query.in(key, value);
+        if (key.includes("(") || key.includes(")")) {
+          clientSideFilters[key] = value;
+        } else {
+          query = query.in(key, value);
+        }
       } else if (!Array.isArray(value)) {
         // Single value - use 'eq' operator
-        query = query.eq(key, value);
+        if (key.includes("(") || key.includes(")")) {
+          clientSideFilters[key] = value;
+        } else {
+          query = query.eq(key, value);
+        }
       }
     }
   });
@@ -70,8 +91,12 @@ export async function getCatalogItems<T>(
   // Apply sorting
   query = query.order(sortBy, { ascending: sortOrder === "asc" });
 
-  // Apply pagination
-  query = query.range(from, to);
+  // If we have client-side filters, fetch all data; otherwise paginate
+  const hasClientSideFilters = Object.keys(clientSideFilters).length > 0;
+
+  if (!hasClientSideFilters) {
+    query = query.range(from, to);
+  }
 
   const { data, error, count } = await query;
 
@@ -80,7 +105,38 @@ export async function getCatalogItems<T>(
     throw new Error(`Failed to fetch ${tableName}: ${error.message}`);
   }
 
-  const total = count || 0;
+  let filteredData = data || [];
+
+  // Apply client-side filters (for fields with special characters like "Prijs (EUR)")
+  if (hasClientSideFilters && filteredData.length > 0) {
+    filteredData = filteredData.filter((item: any) => {
+      for (const [key, value] of Object.entries(clientSideFilters)) {
+        if (key.endsWith("_min")) {
+          const field = key.replace("_min", "");
+          const itemValue = parseFloat(String(item[field] || 0));
+          const filterValue = parseFloat(String(value));
+          if (itemValue < filterValue) return false;
+        } else if (key.endsWith("_max")) {
+          const field = key.replace("_max", "");
+          const itemValue = parseFloat(String(item[field] || 0));
+          const filterValue = parseFloat(String(value));
+          if (itemValue > filterValue) return false;
+        } else if (Array.isArray(value)) {
+          if (!value.includes(item[key])) return false;
+        } else {
+          if (item[key] !== value) return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  // Apply pagination to client-filtered data
+  const paginatedData = hasClientSideFilters
+    ? filteredData.slice(from, from + limit)
+    : filteredData;
+
+  const total = hasClientSideFilters ? filteredData.length : count || 0;
   const totalPages = Math.ceil(total / limit);
 
   // Get filter options and metadata
@@ -94,7 +150,7 @@ export async function getCatalogItems<T>(
   );
 
   return {
-    data: (data || []) as T[],
+    data: paginatedData as T[],
     pagination: {
       page,
       limit,
@@ -142,24 +198,8 @@ export async function getFilterOptionsWithMetadata(
     baseQuery = baseQuery.or(searchConditions);
   }
 
-  // Apply current filters (excluding the field we're calculating options for)
-  if (currentFilters) {
-    Object.entries(currentFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        if (key.endsWith("_min")) {
-          const field = key.replace("_min", "");
-          baseQuery = baseQuery.gte(field, value);
-        } else if (key.endsWith("_max")) {
-          const field = key.replace("_max", "");
-          baseQuery = baseQuery.lte(field, value);
-        } else if (Array.isArray(value) && value.length > 0) {
-          baseQuery = baseQuery.in(key, value);
-        } else if (!Array.isArray(value)) {
-          baseQuery = baseQuery.eq(key, value);
-        }
-      }
-    });
-  }
+  // Don't apply any filters - we need the full dataset to calculate proper min/max ranges
+  // This prevents the glitchy behavior where the slider range changes as you adjust it
 
   const { data, error } = await baseQuery;
 
@@ -168,10 +208,12 @@ export async function getFilterOptionsWithMetadata(
     return { filterOptions: {}, filterMetadata: {} };
   }
 
+  const unfilteredData = data || [];
+
   // Calculate distinct values for categorical filterable fields
   filterableFields.forEach((field) => {
     const valueCounts = new Map<string | number, number>();
-    data?.forEach((item: any) => {
+    unfilteredData.forEach((item: any) => {
       const value = item[field];
       if (value !== null && value !== undefined && value !== "") {
         valueCounts.set(value, (valueCounts.get(value) || 0) + 1);
@@ -193,18 +235,51 @@ export async function getFilterOptionsWithMetadata(
     };
   });
 
+  // Helper function to parse currency strings
+  const parseCurrencyValue = (value: any): number | null => {
+    if (value === null || value === undefined || value === "") return null;
+
+    // If already a number, return it
+    if (typeof value === "number") return value;
+
+    // If string, try to parse it
+    if (typeof value === "string") {
+      // Remove currency symbols, spaces, and convert to number
+      // Handles formats like: "€1.234,56", "€ 1,234.56", "1234.56", etc.
+      const cleanValue = value
+        .replace(/[€$£¥]/g, "") // Remove currency symbols
+        .replace(/\s/g, "") // Remove spaces
+        .trim();
+
+      // Detect decimal separator (comma or period)
+      // If comma appears after period, comma is decimal separator (European format)
+      // If period appears after comma, period is decimal separator (US format)
+      const lastComma = cleanValue.lastIndexOf(",");
+      const lastPeriod = cleanValue.lastIndexOf(".");
+
+      let normalizedValue = cleanValue;
+      if (lastComma > lastPeriod) {
+        // European format: 1.234,56
+        normalizedValue = cleanValue.replace(/\./g, "").replace(",", ".");
+      } else {
+        // US format: 1,234.56
+        normalizedValue = cleanValue.replace(/,/g, "");
+      }
+
+      const parsed = parseFloat(normalizedValue);
+      return isNaN(parsed) ? null : parsed;
+    }
+
+    return null;
+  };
+
   // Calculate min/max for range filterable fields
   rangeFilterFields.forEach((field) => {
     const values: number[] = [];
-    data?.forEach((item: any) => {
-      const value = item[field];
-      if (
-        value !== null &&
-        value !== undefined &&
-        value !== "" &&
-        !isNaN(Number(value))
-      ) {
-        values.push(Number(value));
+    unfilteredData.forEach((item: any) => {
+      const parsed = parseCurrencyValue(item[field]);
+      if (parsed !== null) {
+        values.push(parsed);
       }
     });
 

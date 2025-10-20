@@ -5,7 +5,12 @@ import type { Omvormer } from "@/types/catalog";
 // Configuration for Omvormers table
 const SEARCHABLE_FIELDS = ["Name", "Merk", "SKU"];
 const FILTERABLE_FIELDS = ["Merk", "Type omvormer", "Aantal fases"];
-const RANGE_FILTER_FIELDS = ["Vermogen", "MPPTs", "Garantie (jaren)"];
+const RANGE_FILTER_FIELDS = [
+  "Prijs (EUR)",
+  "Vermogen",
+  "MPPTs",
+  "Garantie (jaren)",
+];
 
 export async function GET(request: Request) {
   try {

@@ -41,6 +41,11 @@ const FILTER_CONFIG = [
     label: "Cell Material",
     type: "multiselect" as const,
   },
+  {
+    field: "Prijs (EUR)",
+    label: "Price (EUR)",
+    type: "range" as const,
+  },
   { field: "Vermogen (Wp)", label: "Power (Wp)", type: "range" as const },
   {
     field: "Productgarantie (jaren)",
@@ -183,11 +188,15 @@ export default function ZonnepanelenPage() {
               </Badge>
             </div>
 
-            {panel["Verkoopprijs paneel"] && (
+            {panel["Prijs (EUR)"] && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
-                  {panel["Verkoopprijs paneel"]}
+                  €
+                  {panel["Prijs (EUR)"].toLocaleString("nl-NL", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}

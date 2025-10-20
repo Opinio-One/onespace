@@ -58,7 +58,7 @@ export interface Zonnepaneel {
   "Productgarantie (jaren)": number;
   NMOT: string;
   "NMOT factor 1.15": string;
-  "Verkoopprijs paneel": string;
+  "Prijs (EUR)": number;
   "Prijs online gemiddeld": string;
   "Jaaropbrengst (kWh)": string;
   "Totale opbrengst na 10 jaar": string;
@@ -101,7 +101,7 @@ export interface Thuisbatterij {
   "Cyclus levensduur bij 25℃": number;
   "Design levensduur": string;
   "Levensduur intensief gebruik": number;
-  Prijs: string;
+  "Prijs (EUR)": number;
   Datasheet: string[];
   "Compatibility list": string;
 }
@@ -120,7 +120,7 @@ export interface Omvormer {
   "Strings per MPPT": number;
   "PV WP": string;
   Strings: number;
-  Price: string;
+  "Prijs (EUR)": number;
   Cost: string;
   Currency: string;
   "Garantie (jaren)": number;
@@ -140,7 +140,7 @@ export interface Binnenunit {
   "Serie:": string;
   "Type:": string;
   "Modelvariant:": string;
-  prijs: string;
+  "Prijs (EUR)": number;
   "Vermogen categorie": string;
   "geluidsdruk (dB)": string;
   SEER: string;
@@ -165,7 +165,7 @@ export interface Buitenunit {
   "Serie:": string;
   "Single/Multi-Split": string;
   "Modelvariant:": string;
-  prijs: string;
+  "Prijs (EUR)": number;
   "Vermogen (kW)": string;
   "Vermogen categorie": string;
   "Aantal poorten Min-Max:": string;

@@ -149,6 +149,8 @@ export function CatalogGrid<T>({
     (key) => !key.endsWith("_min") && !key.endsWith("_max")
   ).length;
 
+  const hasAnyFilters = Object.keys(activeFilters).length > 0;
+
   const filterOptions = data.filterOptions || {};
 
   // Pagination
@@ -244,7 +246,7 @@ export function CatalogGrid<T>({
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                disabled={activeFilterCount === 0}
+                disabled={!hasAnyFilters}
               >
                 Clear All
               </Button>
@@ -299,6 +301,16 @@ export function CatalogGrid<T>({
                             handleRangeFilterChange(field, value)
                           }
                           disabled={loading}
+                          formatValue={
+                            field.toLowerCase().includes("prijs") ||
+                            field.toLowerCase().includes("price")
+                              ? (v) =>
+                                  `€${v.toLocaleString("nl-NL", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })}`
+                              : undefined
+                          }
                         />
                       </div>
                     ) : (
@@ -397,7 +409,7 @@ export function CatalogGrid<T>({
               <p className="text-gray-600">
                 Try adjusting your search or filter criteria
               </p>
-              {activeFilterCount > 0 && (
+              {hasAnyFilters && (
                 <Button
                   variant="outline"
                   onClick={clearFilters}

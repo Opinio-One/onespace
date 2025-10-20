@@ -9,7 +9,7 @@ const FILTERABLE_FIELDS = [
   "Single/Multi-Split",
   "Energielabel koelen:",
 ];
-const RANGE_FILTER_FIELDS = ["SEER", "SCOP", "Geluidsdruk (dB)"];
+const RANGE_FILTER_FIELDS = ["Prijs (EUR)", "SEER", "SCOP", "Geluidsdruk (dB)"];
 
 export async function GET(request: Request) {
   try {
