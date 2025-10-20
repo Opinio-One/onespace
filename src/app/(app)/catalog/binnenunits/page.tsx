@@ -14,27 +14,27 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const SEARCHABLE_FIELDS = ["Product", "Merk:", "Type:"];
+const SEARCHABLE_FIELDS = ["Product", "Merk", "Type"];
 const FILTERABLE_FIELDS = [
-  "Merk:",
-  "Type:",
-  "Energielabel Koelen:",
-  "Energielabel Verwarmen",
+  "Merk",
+  "Type",
+  "Energielabel_Koelen",
+  "Energielabel_Verwarmen",
   "Multisplit compatibel",
-  "Kleur:",
+  "Kleur",
   "Smart-Functies",
 ];
 
 const FILTER_CONFIG = [
-  { field: "Merk:", label: "Brand", type: "multiselect" as const },
-  { field: "Type:", label: "Type", type: "multiselect" as const },
+  { field: "Merk", label: "Brand", type: "multiselect" as const },
+  { field: "Type", label: "Type", type: "multiselect" as const },
   {
-    field: "Energielabel Koelen:",
+    field: "Energielabel_Koelen",
     label: "Cooling Energy Label",
     type: "multiselect" as const,
   },
   {
-    field: "Energielabel Verwarmen",
+    field: "Energielabel_Verwarmen",
     label: "Heating Energy Label",
     type: "multiselect" as const,
   },
@@ -43,7 +43,7 @@ const FILTER_CONFIG = [
     label: "Multisplit Compatible",
     type: "multiselect" as const,
   },
-  { field: "Kleur:", label: "Color", type: "multiselect" as const },
+  { field: "Kleur", label: "Color", type: "multiselect" as const },
   {
     field: "Smart-Functies",
     label: "Smart Features",
@@ -141,7 +141,7 @@ export default function BinnenunitsPage() {
   };
 
   const renderProductCard = (unit: Binnenunit) => {
-    const imageUrl = extractImageUrl(unit["Foto unit:"]);
+    const imageUrl = extractImageUrl(unit["Foto unit"]);
 
     return (
       <Card
@@ -160,7 +160,7 @@ export default function BinnenunitsPage() {
           </div>
           <CardTitle className="text-lg line-clamp-2">{unit.Product}</CardTitle>
           <CardDescription className="text-sm">
-            {unit["Merk:"]} • {unit["Type:"]}
+            {unit.Merk} • {unit.Type}
           </CardDescription>
         </CardHeader>
 
@@ -168,19 +168,17 @@ export default function BinnenunitsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Cooling Label:</span>
-              <Badge
-                className={getEnergyLabelColor(unit["Energielabel Koelen:"])}
-              >
-                {unit["Energielabel Koelen:"]}
+              <Badge className={getEnergyLabelColor(unit.Energielabel_Koelen)}>
+                {unit.Energielabel_Koelen}
               </Badge>
             </div>
 
-            {unit["Prijs_EUR"] && (
+            {unit.Prijs_EUR && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {unit["Prijs_EUR"].toLocaleString("nl-NL", {
+                  {unit.Prijs_EUR.toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -190,7 +188,7 @@ export default function BinnenunitsPage() {
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Power:</span>
-              <span className="font-medium">{unit["Vermogen (kW):"]} kW</span>
+              <span className="font-medium">{unit.Vermogen_kW} kW</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -203,10 +201,10 @@ export default function BinnenunitsPage() {
               <span className="font-medium">{unit.SCOP}</span>
             </div>
 
-            {unit["Kleur:"] && (
+            {unit.Kleur && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Color:</span>
-                <Badge variant="outline">{unit["Kleur:"]}</Badge>
+                <Badge variant="outline">{unit.Kleur}</Badge>
               </div>
             )}
 

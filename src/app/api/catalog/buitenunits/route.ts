@@ -3,13 +3,9 @@ import { getCatalogItems } from "@/lib/services/catalog.service";
 import type { Buitenunit } from "@/types/catalog";
 
 // Configuration for Buitenunits table
-const SEARCHABLE_FIELDS = ["Name", "Merk:", "Serie:"];
-const FILTERABLE_FIELDS = [
-  "Merk:",
-  "Single/Multi-Split",
-  "Energielabel koelen:",
-];
-const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP", "Geluidsdruk (dB)"];
+const SEARCHABLE_FIELDS = ["Name", "Merk", "Serie"];
+const FILTERABLE_FIELDS = ["Merk", "Single/Multi-Split", "Energielabel_koelen"];
+const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP", "Geluidsdruk_dB"];
 
 export async function GET(request: Request) {
   try {

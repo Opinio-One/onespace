@@ -44,11 +44,11 @@ export interface Zonnepaneel {
   "Product code": string;
   Merk: string;
   Logo: string;
-  "Vermogen (Wp)": number;
+  Vermogen_Wp: number;
   "Lengte (mm)": number;
   "Breedte (mm)": number;
   "Hoogte (mm)": number;
-  "Gewicht (kg)": string;
+  Gewicht_kg: number;
   "Celtechnologie type": string;
   "Bi-Facial": string;
   "Glas type": string;
@@ -132,56 +132,56 @@ export interface Omvormer {
 export interface Binnenunit {
   id: number;
   Product: string;
-  "Logo:": string;
-  "Foto unit:": string;
-  "Kleur:": string;
-  "Kleur voorbeeld:": string;
-  "Merk:": string;
-  "Serie:": string;
-  "Type:": string;
-  "Modelvariant:": string;
+  Logo: string;
+  "Foto unit": string;
+  Kleur: string;
+  "Kleur voorbeeld": string;
+  Merk: string;
+  Serie: string;
+  Type: string;
+  Modelvariant: string;
   Prijs_EUR: number;
-  "Vermogen categorie": string;
-  "geluidsdruk (dB)": string;
-  SEER: string;
-  SCOP: string;
-  "Energielabel Koelen:": string;
-  "Energielabel Verwarmen": string;
+  Vermogen_categorie: string;
+  geluidsdruk_dB: string;
+  SEER: number;
+  SCOP: number;
+  Energielabel_Koelen: string;
+  Energielabel_Verwarmen: string;
   "Multisplit compatibel": string;
   "Smart-Functies": string;
-  "Filters:": string;
+  Filters: string;
   "Datasheet/Brochure": any;
   "Airconditioning Buitenunit": string;
-  "Vermogen (kW):": number;
+  Vermogen_kW: number;
 }
 
 // Buitenunits type
 export interface Buitenunit {
   Id: number;
   Name: string;
-  "Logo:": string;
-  "Foto buitenunit:": string;
-  "Merk:": string;
-  "Serie:": string;
+  Logo: string;
+  Foto_buitenunit: string;
+  Merk: string;
+  Serie: string;
   "Single/Multi-Split": string;
-  "Modelvariant:": string;
+  Modelvariant: string;
   Prijs_EUR: number;
-  "Vermogen (kW)": string;
-  "Vermogen categorie": string;
-  "Aantal poorten Min-Max:": string;
-  "Electrische aansluiting:": string;
-  "COP Cooling/Heating": string;
-  SEER: string;
-  SCOP: string;
-  "Gewicht: (kg)": string;
-  "Air flow (m3/Min):": string;
-  "Geluidsdruk (dB)": number;
-  "Afmeting (H/B/D):": string;
-  "Maximum som binnenunit": string;
+  Vermogen_kW: number;
+  Vermogen_categorie: string;
+  Aantal_poorten_Min_Max: string;
+  Electrische_aansluiting: string;
+  "COP_Cooling/Heating": string;
+  SEER: number;
+  SCOP: number;
+  Gewicht_kg: string;
+  Air_flow_m3_Min: string;
+  Geluidsdruk_dB: number;
+  Afmeting_H_B_D: string;
+  Maximum_som_binnenunit: string;
   "Airconditioning binnenunit": string;
-  "Modelvariant: (from Airconditioning binnenunit)": string;
-  "Energielabel koelen:": string;
-  "Datasheet:": any;
+  Modelvariant_binnenunit: string;
+  Energielabel_koelen: string;
+  Datasheet: any;
 }
 
 // Configuration for filterable fields per table

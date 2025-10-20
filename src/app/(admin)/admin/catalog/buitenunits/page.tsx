@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 
 const FILTER_CONFIG = [
-  { field: "Merk:", label: "Brand", type: "multiselect" as const },
+  { field: "Merk", label: "Brand", type: "multiselect" as const },
   { field: "Single/Multi-Split", label: "Type", type: "multiselect" as const },
   {
-    field: "Energielabel koelen:",
+    field: "Energielabel_koelen",
     label: "Cooling Energy Label",
     type: "multiselect" as const,
   },
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
   {
-    field: "Geluidsdruk (dB)",
+    field: "Geluidsdruk_dB",
     label: "Noise Level (dB)",
     type: "range" as const,
   },
@@ -76,7 +76,7 @@ export default function AdminBuitenunitsPage() {
             <img
               src={(() => {
                 try {
-                  const images = JSON.parse(item["Foto buitenunit:"] || "[]");
+                  const images = JSON.parse(item.Foto_buitenunit || "[]");
                   return images[0] || "/placeholder-image.png";
                 } catch {
                   return "/placeholder-image.png";
@@ -94,7 +94,7 @@ export default function AdminBuitenunitsPage() {
           </td>
           <td className="p-3">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {item["Merk:"]}
+              {item.Merk}
             </span>
           </td>
           <td className="p-3">
@@ -102,15 +102,15 @@ export default function AdminBuitenunitsPage() {
               {item["Single/Multi-Split"]}
             </span>
           </td>
-          <td className="p-3">{item["Vermogen (kW)"]}</td>
+          <td className="p-3">{item.Vermogen_kW}</td>
           <td className="p-3">{item.SEER}</td>
           <td className="p-3">{item.SCOP}</td>
           <td className="p-3">
-            <span className="font-medium text-green-600">{item.prijs}</span>
+            <span className="font-medium text-green-600">{item.Prijs_EUR}</span>
           </td>
           <td className="p-3">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-              {item["Serie:"]}
+              {item.Serie}
             </span>
           </td>
           <td className="p-3">

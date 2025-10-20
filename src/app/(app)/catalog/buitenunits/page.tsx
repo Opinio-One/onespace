@@ -14,22 +14,18 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const SEARCHABLE_FIELDS = ["Name", "Merk:", "Serie:"];
-const FILTERABLE_FIELDS = [
-  "Merk:",
-  "Single/Multi-Split",
-  "Energielabel koelen:",
-];
+const SEARCHABLE_FIELDS = ["Name", "Merk", "Serie"];
+const FILTERABLE_FIELDS = ["Merk", "Single/Multi-Split", "Energielabel_koelen"];
 
 const FILTER_CONFIG = [
-  { field: "Merk:", label: "Brand", type: "multiselect" as const },
+  { field: "Merk", label: "Brand", type: "multiselect" as const },
   {
     field: "Single/Multi-Split",
     label: "Type",
     type: "multiselect" as const,
   },
   {
-    field: "Energielabel koelen:",
+    field: "Energielabel_koelen",
     label: "Cooling Energy Label",
     type: "multiselect" as const,
   },
@@ -37,7 +33,7 @@ const FILTER_CONFIG = [
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
   {
-    field: "Geluidsdruk (dB)",
+    field: "Geluidsdruk_dB",
     label: "Noise Level (dB)",
     type: "range" as const,
   },
@@ -130,7 +126,7 @@ export default function BuitenunitsPage() {
   };
 
   const renderProductCard = (unit: Buitenunit) => {
-    const imageUrl = extractImageUrl(unit["Foto buitenunit:"]);
+    const imageUrl = extractImageUrl(unit.Foto_buitenunit);
 
     return (
       <Card
@@ -149,7 +145,7 @@ export default function BuitenunitsPage() {
           </div>
           <CardTitle className="text-lg line-clamp-2">{unit.Name}</CardTitle>
           <CardDescription className="text-sm">
-            {unit["Merk:"]} • {unit["Single/Multi-Split"]}
+            {unit.Merk} • {unit["Single/Multi-Split"]}
           </CardDescription>
         </CardHeader>
 
@@ -157,19 +153,17 @@ export default function BuitenunitsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Energy Label:</span>
-              <Badge
-                className={getEnergyLabelColor(unit["Energielabel koelen:"])}
-              >
-                {unit["Energielabel koelen:"]}
+              <Badge className={getEnergyLabelColor(unit.Energielabel_koelen)}>
+                {unit.Energielabel_koelen}
               </Badge>
             </div>
 
-            {unit["Prijs_EUR"] && (
+            {unit.Prijs_EUR && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {unit["Prijs_EUR"].toLocaleString("nl-NL", {
+                  {unit.Prijs_EUR.toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -179,7 +173,7 @@ export default function BuitenunitsPage() {
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Power:</span>
-              <span className="font-medium">{unit["Vermogen (kW)"]} kW</span>
+              <span className="font-medium">{unit.Vermogen_kW} kW</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -192,17 +186,17 @@ export default function BuitenunitsPage() {
               <span className="font-medium">{unit.SCOP}</span>
             </div>
 
-            {unit["Geluidsdruk (dB)"] && (
+            {unit.Geluidsdruk_dB && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Noise:</span>
-                <span className="text-sm">{unit["Geluidsdruk (dB)"]} dB</span>
+                <span className="text-sm">{unit.Geluidsdruk_dB} dB</span>
               </div>
             )}
 
-            {unit["Gewicht: (kg)"] && (
+            {unit.Gewicht_kg && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Weight:</span>
-                <span className="text-sm">{unit["Gewicht: (kg)"]} kg</span>
+                <span className="text-sm">{unit.Gewicht_kg} kg</span>
               </div>
             )}
           </div>

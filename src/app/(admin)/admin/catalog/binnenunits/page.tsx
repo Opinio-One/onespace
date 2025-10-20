@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 
 const FILTER_CONFIG = [
-  { field: "Merk:", label: "Brand", type: "multiselect" as const },
-  { field: "Type:", label: "Type", type: "multiselect" as const },
+  { field: "Merk", label: "Brand", type: "multiselect" as const },
+  { field: "Type", label: "Type", type: "multiselect" as const },
   {
-    field: "Energielabel Koelen:",
+    field: "Energielabel_Koelen",
     label: "Cooling Energy Label",
     type: "multiselect" as const,
   },
   {
-    field: "Energielabel Verwarmen",
+    field: "Energielabel_Verwarmen",
     label: "Heating Energy Label",
     type: "multiselect" as const,
   },
@@ -24,7 +24,7 @@ const FILTER_CONFIG = [
     label: "Multisplit Compatible",
     type: "multiselect" as const,
   },
-  { field: "Kleur:", label: "Color", type: "multiselect" as const },
+  { field: "Kleur", label: "Color", type: "multiselect" as const },
   {
     field: "Smart-Functies",
     label: "Smart Features",
@@ -87,7 +87,7 @@ export default function AdminBinnenunitsPage() {
             <img
               src={(() => {
                 try {
-                  const images = JSON.parse(item["Foto unit:"] || "[]");
+                  const images = JSON.parse(item["Foto unit"] || "[]");
                   return images[0] || "/placeholder-image.png";
                 } catch {
                   return "/placeholder-image.png";
@@ -105,21 +105,21 @@ export default function AdminBinnenunitsPage() {
           </td>
           <td className="p-3">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {item["Merk:"]}
+              {item.Merk}
             </span>
           </td>
           <td className="p-3">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-              {item["Type:"]}
+              {item.Type}
             </span>
           </td>
-          <td className="p-3">{item["Vermogen (kW):"]}</td>
+          <td className="p-3">{item.Vermogen_kW}</td>
           <td className="p-3">{item.SEER}</td>
           <td className="p-3">{item.SCOP}</td>
           <td className="p-3">
-            <span className="font-medium text-green-600">{item.prijs}</span>
+            <span className="font-medium text-green-600">{item.Prijs_EUR}</span>
           </td>
-          <td className="p-3 font-mono text-sm">{item["Serie:"]}</td>
+          <td className="p-3 font-mono text-sm">{item.Serie}</td>
           <td className="p-3">
             <div className="flex gap-2">
               <Button

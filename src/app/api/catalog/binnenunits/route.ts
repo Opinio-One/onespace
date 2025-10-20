@@ -3,14 +3,14 @@ import { getCatalogItems } from "@/lib/services/catalog.service";
 import type { Binnenunit } from "@/types/catalog";
 
 // Configuration for Binnenunits table
-const SEARCHABLE_FIELDS = ["Product", "Merk:", "Serie:"];
+const SEARCHABLE_FIELDS = ["Product", "Merk", "Serie"];
 const FILTERABLE_FIELDS = [
-  "Merk:",
-  "Type:",
-  "Energielabel Koelen:",
-  "Energielabel Verwarmen",
+  "Merk",
+  "Type",
+  "Energielabel_Koelen",
+  "Energielabel_Verwarmen",
   "Multisplit compatibel",
-  "Kleur:",
+  "Kleur",
   "Smart-Functies",
 ];
 const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP"];

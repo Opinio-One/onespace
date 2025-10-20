@@ -15,7 +15,7 @@ const FILTERABLE_FIELDS = [
 ];
 const RANGE_FILTER_FIELDS = [
   "Prijs_EUR",
-  "Vermogen (Wp)",
+  "Vermogen_Wp",
   "Productgarantie (jaren)",
 ];
 

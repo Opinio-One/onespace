@@ -46,7 +46,7 @@ const FILTER_CONFIG = [
     label: "Price (EUR)",
     type: "range" as const,
   },
-  { field: "Vermogen (Wp)", label: "Power (Wp)", type: "range" as const },
+  { field: "Vermogen_Wp", label: "Power (Wp)", type: "range" as const },
   {
     field: "Productgarantie (jaren)",
     label: "Warranty (years)",
@@ -188,12 +188,12 @@ export default function ZonnepanelenPage() {
               </Badge>
             </div>
 
-            {panel["Prijs_EUR"] && (
+            {panel.Prijs_EUR && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
                 <span className="font-semibold text-green-600">
                   €
-                  {panel["Prijs_EUR"].toLocaleString("nl-NL", {
+                  {panel.Prijs_EUR.toLocaleString("nl-NL", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -203,7 +203,7 @@ export default function ZonnepanelenPage() {
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Power:</span>
-              <span className="font-medium">{panel["Vermogen (Wp)"]} Wp</span>
+              <span className="font-medium">{panel.Vermogen_Wp} Wp</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -215,7 +215,7 @@ export default function ZonnepanelenPage() {
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Weight:</span>
-              <span className="text-sm">{panel["Gewicht (kg)"]} kg</span>
+              <span className="text-sm">{panel.Gewicht_kg} kg</span>
             </div>
 
             {panel["Productgarantie (jaren)"] && (

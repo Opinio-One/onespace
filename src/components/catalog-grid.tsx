@@ -50,7 +50,7 @@ export function CatalogGrid<T>({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>({});
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [rangeValues, setRangeValues] = useState<
     Record<string, [number, number]>
   >({});
