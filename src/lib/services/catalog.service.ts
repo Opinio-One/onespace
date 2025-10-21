@@ -39,30 +39,47 @@ export async function getCatalogItems<T>(
   // Build query
   let query = supabase.from(tableName).select("*", { count: "exact" });
 
+  // Helper function to quote column names with special characters
+  const quoteColumnName = (columnName: string): string => {
+    // If column name contains special characters like /, wrap in double quotes
+    if (
+      columnName.includes("/") ||
+      columnName.includes(" ") ||
+      columnName.includes("-")
+    ) {
+      return `"${columnName}"`;
+    }
+    return columnName;
+  };
+
   // Apply search across multiple fields
   if (search && searchableFields.length > 0) {
     const searchConditions = searchableFields
-      .map((field) => `${field}.ilike.%${search}%`)
+      .map((field) => `${quoteColumnName(field)}.ilike.%${search}%`)
       .join(",");
     query = query.or(searchConditions);
   }
 
-  // Apply filters (all server-side now that field names don't have special characters)
+  // Apply filters
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       // Handle range filters (min/max)
       if (key.endsWith("_min")) {
         const field = key.replace("_min", "");
-        query = query.gte(field, value);
+        const quotedField = quoteColumnName(field);
+        query = query.gte(quotedField, value);
       } else if (key.endsWith("_max")) {
         const field = key.replace("_max", "");
-        query = query.lte(field, value);
+        const quotedField = quoteColumnName(field);
+        query = query.lte(quotedField, value);
       } else if (Array.isArray(value) && value.length > 0) {
         // Multiple values - use 'in' operator
-        query = query.in(key, value);
+        const quotedKey = quoteColumnName(key);
+        query = query.in(quotedKey, value);
       } else if (!Array.isArray(value)) {
         // Single value - use 'eq' operator
-        query = query.eq(key, value);
+        const quotedKey = quoteColumnName(key);
+        query = query.eq(quotedKey, value);
       }
     }
   });

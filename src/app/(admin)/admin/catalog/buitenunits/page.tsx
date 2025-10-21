@@ -8,7 +8,7 @@ import { Edit, Trash2 } from "lucide-react";
 
 const FILTER_CONFIG = [
   { field: "Merk", label: "Brand", type: "multiselect" as const },
-  { field: "Single/Multi-Split", label: "Type", type: "multiselect" as const },
+  { field: "split_type", label: "Type", type: "multiselect" as const },
   {
     field: "Energielabel_koelen",
     label: "Cooling Energy Label",
@@ -16,11 +16,6 @@ const FILTER_CONFIG = [
   },
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
-  {
-    field: "Geluidsdruk_dB",
-    label: "Noise Level (dB)",
-    type: "range" as const,
-  },
 ];
 
 export default function AdminBuitenunitsPage() {

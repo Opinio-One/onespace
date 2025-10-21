@@ -5,7 +5,12 @@ import type { Buitenunit } from "@/types/catalog";
 // Configuration for Buitenunits table
 const SEARCHABLE_FIELDS = ["Name", "Merk", "Serie"];
 const FILTERABLE_FIELDS = ["Merk", "Single/Multi-Split", "Energielabel_koelen"];
-const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP", "Geluidsdruk_dB"];
+const RANGE_FILTER_FIELDS = ["Prijs_EUR", "SEER", "SCOP"];
+
+// Field mapping for URL-safe parameter names to database column names
+const FIELD_MAPPING: Record<string, string> = {
+  split_type: "Single/Multi-Split",
+};
 
 export async function GET(request: Request) {
   try {
@@ -22,7 +27,20 @@ export async function GET(request: Request) {
 
     // Extract filters from query params
     const filters: Record<string, string | string[] | number> = {};
+
+    // Handle mapped fields
+    Object.entries(FIELD_MAPPING).forEach(([urlKey, dbColumn]) => {
+      const value = searchParams.get(urlKey);
+      if (value) {
+        filters[dbColumn] = value.includes(",") ? value.split(",") : value;
+      }
+    });
+
+    // Handle regular filterable fields
     FILTERABLE_FIELDS.forEach((field) => {
+      // Skip if already handled by mapping
+      if (Object.values(FIELD_MAPPING).includes(field)) return;
+
       const value = searchParams.get(field);
       if (value) {
         filters[field] = value.includes(",") ? value.split(",") : value;
@@ -54,6 +72,30 @@ export async function GET(request: Request) {
       filterableFields: FILTERABLE_FIELDS,
       rangeFilterFields: RANGE_FILTER_FIELDS,
     });
+
+    // Map filter metadata keys back to URL-safe names
+    if (result.filterMetadata) {
+      const mappedMetadata: Record<string, any> = {};
+      Object.entries(result.filterMetadata).forEach(([key, value]) => {
+        // Find if this key needs to be mapped back
+        const urlKey = Object.entries(FIELD_MAPPING).find(
+          ([_, dbCol]) => dbCol === key
+        )?.[0];
+        mappedMetadata[urlKey || key] = value;
+      });
+      result.filterMetadata = mappedMetadata;
+    }
+
+    if (result.filterOptions) {
+      const mappedOptions: Record<string, any> = {};
+      Object.entries(result.filterOptions).forEach(([key, value]) => {
+        const urlKey = Object.entries(FIELD_MAPPING).find(
+          ([_, dbCol]) => dbCol === key
+        )?.[0];
+        mappedOptions[urlKey || key] = value;
+      });
+      result.filterOptions = mappedOptions;
+    }
 
     return NextResponse.json(result);
   } catch (error) {

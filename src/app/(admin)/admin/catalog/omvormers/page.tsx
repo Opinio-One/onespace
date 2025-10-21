@@ -15,12 +15,6 @@ const FILTER_CONFIG = [
   },
   { field: "Aantal fases", label: "Phases", type: "multiselect" as const },
   { field: "Vermogen", label: "Power (kW)", type: "range" as const },
-  { field: "MPPTs", label: "MPPTs", type: "range" as const },
-  {
-    field: "Garantie (jaren)",
-    label: "Warranty (years)",
-    type: "range" as const,
-  },
 ];
 
 export default function AdminOmvormersPage() {

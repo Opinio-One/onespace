@@ -22,12 +22,6 @@ const FILTER_CONFIG = [
     label: "Cell Material",
     type: "multiselect" as const,
   },
-  { field: "Vermogen (Wp)", label: "Power (Wp)", type: "range" as const },
-  {
-    field: "Productgarantie (jaren)",
-    label: "Warranty (years)",
-    type: "range" as const,
-  },
 ];
 
 export default function AdminZonnepanelenPage() {

@@ -15,12 +15,12 @@ import {
 import { Button } from "@/components/ui/button";
 
 const SEARCHABLE_FIELDS = ["Name", "Merk", "Serie"];
-const FILTERABLE_FIELDS = ["Merk", "Single/Multi-Split", "Energielabel_koelen"];
+const FILTERABLE_FIELDS = ["Merk", "split_type", "Energielabel_koelen"];
 
 const FILTER_CONFIG = [
   { field: "Merk", label: "Brand", type: "multiselect" as const },
   {
-    field: "Single/Multi-Split",
+    field: "split_type",
     label: "Type",
     type: "multiselect" as const,
   },
@@ -32,11 +32,6 @@ const FILTER_CONFIG = [
   { field: "Prijs_EUR", label: "Price (EUR)", type: "range" as const },
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
-  {
-    field: "Geluidsdruk_dB",
-    label: "Noise Level (dB)",
-    type: "range" as const,
-  },
 ];
 
 const Badge = ({

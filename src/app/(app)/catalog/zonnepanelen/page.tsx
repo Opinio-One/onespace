@@ -46,12 +46,6 @@ const FILTER_CONFIG = [
     label: "Price (EUR)",
     type: "range" as const,
   },
-  { field: "Vermogen_Wp", label: "Power (Wp)", type: "range" as const },
-  {
-    field: "Productgarantie (jaren)",
-    label: "Warranty (years)",
-    type: "range" as const,
-  },
 ];
 
 // Badge component
