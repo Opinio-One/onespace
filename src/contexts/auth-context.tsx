@@ -13,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  hasCompletedIntake: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (
     email: string,
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [hasCompletedIntake, setHasCompletedIntake] = useState(false);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
@@ -46,17 +48,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("User data fetched:", { user: !!user, profile });
         setUser(user);
         setProfile(profile);
+
+        // Check intake completion status
+        if (user) {
+          await checkIntakeStatus();
+        }
       } else {
         console.log("Failed to fetch user data");
         setUser(null);
         setProfile(null);
+        setHasCompletedIntake(false);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
       setUser(null);
       setProfile(null);
+      setHasCompletedIntake(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkIntakeStatus = async () => {
+    try {
+      const response = await fetch("/api/intake/status");
+      if (response.ok) {
+        const { completed } = await response.json();
+        setHasCompletedIntake(completed);
+      }
+    } catch (error) {
+      console.error("Error checking intake status:", error);
+      setHasCompletedIntake(false);
+    }
+  };
+
+  const syncIntakeSession = async () => {
+    try {
+      // Check for intake session in localStorage
+      const sessionId = localStorage.getItem("intake_session_id");
+      if (sessionId) {
+        const response = await fetch("/api/intake/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+
+        if (response.ok) {
+          // Clear localStorage after successful sync
+          localStorage.removeItem("intake_session_id");
+          console.log("Intake session synced successfully");
+        }
+      }
+    } catch (error) {
+      console.error("Error syncing intake session:", error);
     }
   };
 
@@ -73,9 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch profile data when user is authenticated
         console.log("User authenticated, fetching profile...");
         await fetchUser();
+        // Sync any anonymous intake session
+        await syncIntakeSession();
       } else {
         console.log("User signed out, clearing profile");
         setProfile(null);
+        setHasCompletedIntake(false);
       }
       setLoading(false);
     });
@@ -102,6 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Manually fetch profile data after successful sign-in
         console.log("Manually fetching profile after sign-in...");
         await fetchUser();
+        // Sync any anonymous intake session
+        await syncIntakeSession();
         return {};
       } else {
         return { error: data.error };
@@ -127,6 +176,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         setUser(data.user);
         // Profile will be fetched separately via fetchUser()
+        // Sync any anonymous intake session
+        await syncIntakeSession();
         return {};
       } else {
         return { error: data.error };
@@ -156,6 +207,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     profile,
     loading,
+    hasCompletedIntake,
     signIn,
     signUp,
     signOut,

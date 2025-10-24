@@ -10,6 +10,7 @@ import {
   FileText,
   Bell,
   HelpCircle,
+  ClipboardCheck,
 } from "lucide-react";
 
 import {
@@ -39,6 +40,11 @@ const data = {
       title: "Home",
       url: "/",
       icon: Home,
+    },
+    {
+      title: "Intake Quiz",
+      url: "/intake",
+      icon: ClipboardCheck,
     },
     {
       title: "Catalog",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
 import {
   Card,
   CardContent,
@@ -55,7 +54,16 @@ export function CatalogGrid<T>({
     Record<string, [number, number]>
   >({});
 
-  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Fetch data from API
   const fetchData = async () => {

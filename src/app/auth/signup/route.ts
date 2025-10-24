@@ -39,6 +39,16 @@ export async function POST(request: NextRequest) {
       console.error("Error creating profile:", profileError);
       // Don't fail signup if profile creation fails, just log it
     }
+
+    // Check for intake session to sync
+    try {
+      // Check if there's a session_id in localStorage (we can't access it server-side)
+      // The client will handle the sync via the /api/intake/sync endpoint
+      console.log("User signed up, intake sync will be handled client-side");
+    } catch (error) {
+      console.error("Error handling intake sync:", error);
+      // Don't fail signup if sync fails
+    }
   }
 
   return NextResponse.json({ user: data.user });
