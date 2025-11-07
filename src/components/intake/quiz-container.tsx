@@ -260,8 +260,8 @@ export function QuizContainer({
       // Log completion
       console.log("Quiz completed with profile:", result.profile_id);
 
-      // Redirect to results or dashboard
-      router.push("/dashboard?completed=true");
+      // Redirect to dashboard (home page)
+      router.push("/?completed=true");
     } catch (error) {
       console.error("Error completing quiz:", error);
       setError(

@@ -6,12 +6,16 @@ import { CatalogGrid } from "@/components/catalog-grid";
 import { ProductImage } from "@/components/catalog-product-image";
 import { Sun } from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  EnhancedCard,
+  EnhancedCardHeader,
+  EnhancedCardImage,
+  EnhancedCardContent,
+  EnhancedCardTitle,
+  EnhancedCardDescription,
+  ProductSpec,
+  PriceDisplay,
+} from "@/components/ui/enhanced-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const SEARCHABLE_FIELDS = ["Product", "Merk", "Product code"];
@@ -47,35 +51,6 @@ const FILTER_CONFIG = [
     type: "range" as const,
   },
 ];
-
-// Badge component
-const Badge = ({
-  children,
-  variant = "default",
-  className = "",
-}: {
-  children: React.ReactNode;
-  variant?: "default" | "secondary" | "destructive" | "outline";
-  className?: string;
-}) => {
-  const baseClasses =
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors";
-  const variantClasses = {
-    default:
-      "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-    secondary:
-      "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive:
-      "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-    outline: "text-foreground",
-  };
-
-  return (
-    <span className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
-      {children}
-    </span>
-  );
-};
 
 export default function ZonnepanelenPage() {
   const [initialData, setInitialData] =
@@ -149,117 +124,125 @@ export default function ZonnepanelenPage() {
   // Product card renderer
   const renderProductCard = (panel: Zonnepaneel) => {
     const imageUrl = extractImageUrl(panel.Afbeelding);
+    const isHighPerformance = panel.Vermogen_Wp && panel.Vermogen_Wp >= 400;
+    const hasHighScore =
+      panel["OS (opbrengstscore)"] &&
+      parseFloat(panel["OS (opbrengstscore)"]) >= 8;
 
     return (
-      <Card
+      <EnhancedCard
         key={panel.Id}
-        className="hover:shadow-lg transition-shadow flex flex-col h-full"
+        variant={isHighPerformance ? "featured" : "default"}
+        featured={isHighPerformance}
+        className="h-full"
       >
-        <CardHeader className="pb-3 flex-shrink-0">
-          <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden relative">
+        <EnhancedCardHeader
+          badge={isHighPerformance ? "High Performance" : undefined}
+          badgeVariant={isHighPerformance ? "default" : "secondary"}
+        >
+          <EnhancedCardImage
+            aspectRatio="square"
+            overlay={
+              <div className="flex gap-2">
+                <Button size="sm" variant="secondary" className="opacity-90">
+                  <Sun className="h-4 w-4 mr-1" />
+                  Quick View
+                </Button>
+              </div>
+            }
+          >
             <ProductImage
               imageUrl={imageUrl}
               productName={panel.Product}
               fallbackIcon={
-                <Sun className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                <Sun className="h-16 w-16 mx-auto mb-2 text-gray-400" />
               }
             />
-          </div>
-          <CardTitle className="text-lg line-clamp-2">
-            {panel.Product}
-          </CardTitle>
-          <CardDescription className="text-sm">
+          </EnhancedCardImage>
+
+          <EnhancedCardTitle>{panel.Product}</EnhancedCardTitle>
+          <EnhancedCardDescription>
             {panel.Merk} • {panel["Product code"]}
-          </CardDescription>
-        </CardHeader>
+          </EnhancedCardDescription>
+        </EnhancedCardHeader>
 
-        <CardContent className="space-y-3 flex-grow flex flex-col">
-          <div className="space-y-3">
+        <EnhancedCardContent
+          onViewDetails={() => console.log("View details for", panel.Product)}
+          onAddToCart={() => console.log("Add to cart", panel.Product)}
+          onToggleFavorite={() => console.log("Toggle favorite", panel.Product)}
+        >
+          <ProductSpec
+            label="Cell Technology"
+            value={panel["Celtechnologie type"]}
+            badge
+            badgeColor={getCellTypeColor(panel["Celtechnologie type"])}
+          />
+
+          {panel.Prijs_EUR && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Cell Type:</span>
-              <Badge className={getCellTypeColor(panel["Celtechnologie type"])}>
-                {panel["Celtechnologie type"]}
-              </Badge>
+              <span className="text-sm text-muted-foreground">Price:</span>
+              <PriceDisplay price={panel.Prijs_EUR} className="text-lg" />
             </div>
+          )}
 
-            {panel.Prijs_EUR && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Price:</span>
-                <span className="font-semibold text-green-600">
-                  €
-                  {panel.Prijs_EUR.toLocaleString("nl-NL", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-            )}
+          <ProductSpec
+            label="Power Output"
+            value={`${panel.Vermogen_Wp} Wp`}
+            icon={<Sun className="h-4 w-4" />}
+          />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Power:</span>
-              <span className="font-medium">{panel.Vermogen_Wp} Wp</span>
-            </div>
+          <ProductSpec
+            label="Dimensions"
+            value={`${panel["Lengte (mm)"]} × ${panel["Breedte (mm)"]} mm`}
+          />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Dimensions:</span>
-              <span className="text-sm">
-                {panel["Lengte (mm)"]} × {panel["Breedte (mm)"]} mm
-              </span>
-            </div>
+          <ProductSpec label="Weight" value={`${panel.Gewicht_kg} kg`} />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Weight:</span>
-              <span className="text-sm">{panel.Gewicht_kg} kg</span>
-            </div>
+          {panel["Productgarantie (jaren)"] && (
+            <ProductSpec
+              label="Warranty"
+              value={`${panel["Productgarantie (jaren)"]} years`}
+            />
+          )}
 
-            {panel["Productgarantie (jaren)"] && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Warranty:</span>
-                <span className="text-sm">
-                  {panel["Productgarantie (jaren)"]} years
-                </span>
-              </div>
-            )}
+          {panel["OS (opbrengstscore)"] && (
+            <ProductSpec
+              label="Yield Score"
+              value={panel["OS (opbrengstscore)"]}
+              badge
+              badgeColor={getScoreColor(panel["OS (opbrengstscore)"])}
+            />
+          )}
 
-            {panel["OS (opbrengstscore)"] && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Yield Score:</span>
-                <Badge className={getScoreColor(panel["OS (opbrengstscore)"])}>
-                  {panel["OS (opbrengstscore)"]}
+          {panel["DS (duurzaamheidscore)"] && (
+            <ProductSpec
+              label="Durability Score"
+              value={panel["DS (duurzaamheidscore)"]}
+              badge
+              badgeColor={getScoreColor(panel["DS (duurzaamheidscore)"])}
+            />
+          )}
+
+          {panel["Bi-Facial"] && (
+            <div className="pt-2">
+              <span className="text-sm text-muted-foreground">Features:</span>
+              <div className="mt-2 flex flex-wrap gap-1">
+                <Badge variant="outline" className="text-xs">
+                  {panel["Bi-Facial"]}
                 </Badge>
-              </div>
-            )}
-
-            {panel["DS (duurzaamheidscore)"] && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Durability:</span>
-                <Badge
-                  className={getScoreColor(panel["DS (duurzaamheidscore)"])}
-                >
-                  {panel["DS (duurzaamheidscore)"]}
-                </Badge>
-              </div>
-            )}
-
-            {panel["Bi-Facial"] && (
-              <div className="pt-2">
-                <span className="text-sm text-gray-600">Features:</span>
-                <div className="mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    {panel["Bi-Facial"]}
+                {hasHighScore && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-green-50 text-green-700 border-green-200"
+                  >
+                    High Efficiency
                   </Badge>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="pt-2 border-t mt-auto">
-            <Button className="w-full" size="sm">
-              View Details
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+        </EnhancedCardContent>
+      </EnhancedCard>
     );
   };
 

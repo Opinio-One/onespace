@@ -41,11 +41,13 @@ export async function getCatalogItems<T>(
 
   // Helper function to quote column names with special characters
   const quoteColumnName = (columnName: string): string => {
-    // If column name contains special characters like /, wrap in double quotes
+    // If column name contains special characters like /, spaces, parentheses, or hyphens, wrap in double quotes
     if (
       columnName.includes("/") ||
       columnName.includes(" ") ||
-      columnName.includes("-")
+      columnName.includes("-") ||
+      columnName.includes("(") ||
+      columnName.includes(")")
     ) {
       return `"${columnName}"`;
     }
@@ -84,8 +86,9 @@ export async function getCatalogItems<T>(
     }
   });
 
-  // Apply sorting
-  query = query.order(sortBy, { ascending: sortOrder === "asc" });
+  // Apply sorting - quote column name if it contains special characters
+  const quotedSortBy = quoteColumnName(sortBy);
+  query = query.order(quotedSortBy, { ascending: sortOrder === "asc" });
 
   // Apply pagination (all filtering is server-side now)
   query = query.range(from, to);

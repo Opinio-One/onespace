@@ -6,12 +6,16 @@ import { CatalogGrid } from "@/components/catalog-grid";
 import { ProductImage } from "@/components/catalog-product-image";
 import { Wind } from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  EnhancedCard,
+  EnhancedCardHeader,
+  EnhancedCardImage,
+  EnhancedCardContent,
+  EnhancedCardTitle,
+  EnhancedCardDescription,
+  ProductSpec,
+  PriceDisplay,
+} from "@/components/ui/enhanced-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const SEARCHABLE_FIELDS = ["Product", "Merk", "Type"];
@@ -53,34 +57,6 @@ const FILTER_CONFIG = [
   { field: "SEER", label: "SEER", type: "range" as const },
   { field: "SCOP", label: "SCOP", type: "range" as const },
 ];
-
-const Badge = ({
-  children,
-  variant = "default",
-  className = "",
-}: {
-  children: React.ReactNode;
-  variant?: "default" | "secondary" | "destructive" | "outline";
-  className?: string;
-}) => {
-  const baseClasses =
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors";
-  const variantClasses = {
-    default:
-      "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-    secondary:
-      "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive:
-      "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-    outline: "text-foreground",
-  };
-
-  return (
-    <span className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
-      {children}
-    </span>
-  );
-};
 
 export default function BinnenunitsPage() {
   const [initialData, setInitialData] =
@@ -142,91 +118,120 @@ export default function BinnenunitsPage() {
 
   const renderProductCard = (unit: Binnenunit) => {
     const imageUrl = extractImageUrl(unit["Foto unit"]);
+    const isHighEfficiency = unit.SEER && parseFloat(unit.SEER) >= 6;
+    const isSmart = unit["Smart-Functies"] && unit["Smart-Functies"].length > 0;
 
     return (
-      <Card
+      <EnhancedCard
         key={unit.id}
-        className="hover:shadow-lg transition-shadow flex flex-col h-full"
+        variant={isHighEfficiency ? "featured" : "default"}
+        featured={isHighEfficiency}
+        className="h-full"
       >
-        <CardHeader className="pb-3 flex-shrink-0">
-          <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden relative">
+        <EnhancedCardHeader
+          badge={
+            isHighEfficiency ? "High Efficiency" : isSmart ? "Smart" : undefined
+          }
+          badgeVariant={isHighEfficiency ? "default" : "secondary"}
+        >
+          <EnhancedCardImage
+            aspectRatio="square"
+            overlay={
+              <div className="flex gap-2">
+                <Button size="sm" variant="secondary" className="opacity-90">
+                  <Wind className="h-4 w-4 mr-1" />
+                  Quick View
+                </Button>
+              </div>
+            }
+          >
             <ProductImage
               imageUrl={imageUrl}
               productName={unit.Product}
               fallbackIcon={
-                <Wind className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                <Wind className="h-16 w-16 mx-auto mb-2 text-gray-400" />
               }
             />
-          </div>
-          <CardTitle className="text-lg line-clamp-2">{unit.Product}</CardTitle>
-          <CardDescription className="text-sm">
+          </EnhancedCardImage>
+
+          <EnhancedCardTitle>{unit.Product}</EnhancedCardTitle>
+          <EnhancedCardDescription>
             {unit.Merk} • {unit.Type}
-          </CardDescription>
-        </CardHeader>
+          </EnhancedCardDescription>
+        </EnhancedCardHeader>
 
-        <CardContent className="space-y-3 flex-grow flex flex-col">
-          <div className="space-y-3">
+        <EnhancedCardContent
+          onViewDetails={() => console.log("View details for", unit.Product)}
+          onAddToCart={() => console.log("Add to cart", unit.Product)}
+          onToggleFavorite={() => console.log("Toggle favorite", unit.Product)}
+        >
+          <ProductSpec
+            label="Cooling Label"
+            value={unit.Energielabel_Koelen}
+            badge
+            badgeColor={getEnergyLabelColor(unit.Energielabel_Koelen)}
+          />
+
+          {unit.Prijs_EUR && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Cooling Label:</span>
-              <Badge className={getEnergyLabelColor(unit.Energielabel_Koelen)}>
-                {unit.Energielabel_Koelen}
-              </Badge>
+              <span className="text-sm text-muted-foreground">Price:</span>
+              <PriceDisplay price={unit.Prijs_EUR} className="text-lg" />
             </div>
+          )}
 
-            {unit.Prijs_EUR && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Price:</span>
-                <span className="font-semibold text-green-600">
-                  €
-                  {unit.Prijs_EUR.toLocaleString("nl-NL", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-            )}
+          <ProductSpec
+            label="Power"
+            value={`${unit.Vermogen_kW} kW`}
+            icon={<Wind className="h-4 w-4" />}
+          />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Power:</span>
-              <span className="font-medium">{unit.Vermogen_kW} kW</span>
-            </div>
+          <ProductSpec
+            label="SEER"
+            value={unit.SEER}
+            badge
+            badgeColor={
+              isHighEfficiency
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }
+          />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">SEER:</span>
-              <span className="font-medium">{unit.SEER}</span>
-            </div>
+          <ProductSpec
+            label="SCOP"
+            value={unit.SCOP}
+            badge
+            badgeColor="bg-blue-100 text-blue-800"
+          />
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">SCOP:</span>
-              <span className="font-medium">{unit.SCOP}</span>
-            </div>
+          {unit.Kleur && (
+            <ProductSpec
+              label="Color"
+              value={unit.Kleur}
+              badge
+              badgeColor="bg-gray-100 text-gray-800"
+            />
+          )}
 
-            {unit.Kleur && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Color:</span>
-                <Badge variant="outline">{unit.Kleur}</Badge>
-              </div>
-            )}
-
-            {unit["Smart-Functies"] && (
-              <div className="pt-2">
-                <span className="text-sm text-gray-600">Features:</span>
-                <div className="mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    {unit["Smart-Functies"]}
+          {unit["Smart-Functies"] && (
+            <div className="pt-2">
+              <span className="text-sm text-muted-foreground">Features:</span>
+              <div className="mt-2 flex flex-wrap gap-1">
+                <Badge variant="outline" className="text-xs">
+                  {unit["Smart-Functies"]}
+                </Badge>
+                {isSmart && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                  >
+                    Smart Features
                   </Badge>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="pt-2 border-t mt-auto">
-            <Button className="w-full" size="sm">
-              View Details
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+        </EnhancedCardContent>
+      </EnhancedCard>
     );
   };
 

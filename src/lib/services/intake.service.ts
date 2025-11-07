@@ -354,3 +354,5 @@ export async function hasCompletedIntake(userId: string): Promise<boolean> {
   return profile !== null;
 }
 
+
+
