@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { ErrorBoundary } from "@/components/error-boundary";
 import {
   DndContext,
   closestCenter,
@@ -98,55 +99,70 @@ function SortableWidget({
       isDragging,
     };
 
-    switch (widget.id) {
-      case "algemene_scan":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <AlgemeneScanWidget
-              advice={data.generalAdvice}
-              onRecalculate={() => onRecalculate("algemene_scan")}
-            />
-          </Suspense>
-        );
-      case "wp":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <WPWidget {...widgetProps} />
-          </Suspense>
-        );
-      case "pv":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <PVWidget {...widgetProps} />
-          </Suspense>
-        );
-      case "battery":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <BatteryWidget {...widgetProps} />
-          </Suspense>
-        );
-      case "isolatie":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <IsolatieWidget {...widgetProps} />
-          </Suspense>
-        );
-      case "ac":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <ACWidget {...widgetProps} />
-          </Suspense>
-        );
-      case "afgifte":
-        return (
-          <Suspense fallback={<WidgetSkeleton />}>
-            <AfgifteWidget {...widgetProps} />
-          </Suspense>
-        );
-      default:
-        return null;
-    }
+    const widgetContent = (() => {
+      switch (widget.id) {
+        case "algemene_scan":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <AlgemeneScanWidget
+                advice={data.generalAdvice}
+                onRecalculate={() => onRecalculate("algemene_scan")}
+              />
+            </Suspense>
+          );
+        case "wp":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <WPWidget {...widgetProps} />
+            </Suspense>
+          );
+        case "pv":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <PVWidget {...widgetProps} />
+            </Suspense>
+          );
+        case "battery":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <BatteryWidget {...widgetProps} />
+            </Suspense>
+          );
+        case "isolatie":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <IsolatieWidget {...widgetProps} />
+            </Suspense>
+          );
+        case "ac":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <ACWidget {...widgetProps} />
+            </Suspense>
+          );
+        case "afgifte":
+          return (
+            <Suspense fallback={<WidgetSkeleton />}>
+              <AfgifteWidget {...widgetProps} />
+            </Suspense>
+          );
+        default:
+          return null;
+      }
+    })();
+
+    // Wrap each widget in an ErrorBoundary to prevent one widget from breaking the entire dashboard
+    return (
+      <ErrorBoundary
+        showHome={false}
+        showRetry={true}
+        onError={(error, errorInfo) => {
+          console.error(`Error in widget ${widget.id}:`, error, errorInfo);
+        }}
+      >
+        {widgetContent}
+      </ErrorBoundary>
+    );
   };
 
   return (
