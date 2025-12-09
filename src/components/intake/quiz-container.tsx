@@ -11,6 +11,7 @@ import {
   getAllQuestions,
 } from "@/lib/intake/questions";
 import { trackIntakeEvent } from "@/lib/services/analytics-client.service";
+import { createTimeoutSignal } from "@/lib/utils";
 import type { QuizState, IntakeResponses, QuizStep } from "@/types/intake";
 
 interface QuizContainerProps {
@@ -127,10 +128,24 @@ export function QuizContainer({
           // Handle discipline-specific questions
           const discipline = getCurrentQuestion()?.discipline;
           if (discipline) {
-            newResponses[discipline as keyof IntakeResponses] = {
-              ...newResponses[discipline as keyof IntakeResponses],
-              [prev.currentStep.replace(`${discipline}_`, "")]: value,
-            };
+            const disciplineKey = discipline as keyof IntakeResponses;
+            const existingValue = newResponses[disciplineKey];
+            const fieldName = prev.currentStep.replace(`${discipline}_`, "");
+
+            if (
+              typeof existingValue === "object" &&
+              existingValue !== null &&
+              !Array.isArray(existingValue)
+            ) {
+              newResponses[disciplineKey] = {
+                ...existingValue,
+                [fieldName]: value,
+              } as any;
+            } else {
+              newResponses[disciplineKey] = {
+                [fieldName]: value,
+              } as any;
+            }
           }
         }
 
@@ -214,10 +229,23 @@ export function QuizContainer({
     setError("");
 
     try {
-      // Force save before completing
-      await forceSave(quizState);
+      // Force save before completing (with timeout)
+      try {
+        await Promise.race([
+          forceSave(quizState),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Save timeout")), 10000)
+          ),
+        ]);
+      } catch (saveError) {
+        console.warn(
+          "Failed to save before completion, continuing anyway:",
+          saveError
+        );
+        // Continue even if save fails - data might already be saved
+      }
 
-      // Track quiz completion
+      // Track quiz completion (don't block on this)
       const startTime = quizState.startedAt;
       const durationSeconds = Math.round(
         (Date.now() - startTime.getTime()) / 1000
@@ -229,21 +257,63 @@ export function QuizContainer({
         "quiz_completed",
         quizState.selectedDisciplines[0], // Primary discipline
         durationSeconds
-      );
-
-      // Complete the quiz
-      const response = await fetch("/api/intake/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: initialSessionId,
-          responses: quizState.responses,
-          disciplines: quizState.selectedDisciplines,
-        }),
+      ).catch((error) => {
+        console.warn("Failed to track completion event:", error);
+        // Don't block on analytics
       });
 
+      // Complete the quiz with timeout
+      let response: Response;
+      try {
+        response = await fetch("/api/intake/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: initialSessionId,
+            responses: quizState.responses,
+            disciplines: quizState.selectedDisciplines,
+          }),
+          signal: createTimeoutSignal(15000), // 15 second timeout
+        });
+      } catch (fetchError) {
+        // Handle network errors gracefully
+        if (fetchError instanceof Error) {
+          if (
+            fetchError.name === "AbortError" ||
+            fetchError.name === "TimeoutError"
+          ) {
+            throw new Error("TIMEOUT");
+          } else if (
+            fetchError.message.includes("fetch") ||
+            fetchError.message.includes("network") ||
+            fetchError.message.includes("Failed to fetch")
+          ) {
+            throw new Error("NETWORK");
+          }
+        }
+        throw fetchError;
+      }
+
       if (!response.ok) {
-        throw new Error("Failed to complete quiz");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Unknown error";
+
+        // Check if it's a server error (Supabase might be down)
+        if (response.status >= 500) {
+          throw new Error("SERVER_ERROR");
+        }
+
+        // Check for specific Supabase errors
+        if (
+          errorMessage.includes("Supabase") ||
+          errorMessage.includes("PGRST") ||
+          errorMessage.includes("connection") ||
+          errorMessage.includes("network")
+        ) {
+          throw new Error("NETWORK");
+        }
+
+        throw new Error(`API_ERROR: ${errorMessage}`);
       }
 
       const result = await response.json();
@@ -264,9 +334,29 @@ export function QuizContainer({
       router.push("/?completed=true");
     } catch (error) {
       console.error("Error completing quiz:", error);
-      setError(
-        "Er is een fout opgetreden bij het voltooien van de quiz. Probeer het opnieuw."
-      );
+
+      // Provide user-friendly error messages based on error type
+      let errorMessage =
+        "Er is een fout opgetreden bij het voltooien van de quiz.";
+
+      if (error instanceof Error) {
+        if (error.message === "TIMEOUT") {
+          errorMessage =
+            "Het verzoek duurde te lang. Controleer uw internetverbinding en probeer het opnieuw.";
+        } else if (
+          error.message === "NETWORK" ||
+          error.message === "SERVER_ERROR"
+        ) {
+          errorMessage =
+            "Er is een probleem met de verbinding naar de server. Uw antwoorden zijn lokaal opgeslagen. Probeer het later opnieuw of vernieuw de pagina.";
+        } else if (error.message.startsWith("API_ERROR")) {
+          // For other API errors, show a more generic message
+          errorMessage =
+            "Er is een fout opgetreden bij het opslaan. Uw antwoorden zijn lokaal opgeslagen. Probeer het later opnieuw.";
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -360,9 +450,15 @@ export function QuizContainer({
     const discipline = currentQuestion?.discipline;
     if (discipline && currentQuestion) {
       const fieldName = step.replace(`${discipline}_`, "");
-      return responses[discipline as keyof IntakeResponses]?.[
-        fieldName as keyof any
-      ];
+      const disciplineData = responses[discipline as keyof IntakeResponses];
+
+      if (
+        typeof disciplineData === "object" &&
+        disciplineData !== null &&
+        !Array.isArray(disciplineData)
+      ) {
+        return (disciplineData as Record<string, any>)[fieldName];
+      }
     }
 
     return undefined;
