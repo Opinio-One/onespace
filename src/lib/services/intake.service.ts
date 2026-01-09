@@ -140,36 +140,67 @@ export async function completeIntakeSession(
     const normalizedProfile = computeNormalizedProfile(responses, disciplines);
 
     // Create intake profile
-    const { data: profileData, error: profileError } = await supabase
-      .from("intake_profiles")
-      .upsert(
-        {
-          user_id: userId,
-          session_id: sessionData.id,
-          budget_min: normalizedProfile.budget.min,
-          budget_max: normalizedProfile.budget.max,
-          goals: normalizedProfile.goals.primary,
-          disciplines,
-          profile_data: normalizedProfile,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        }
-      )
-      .select()
-      .single();
+    // For authenticated users, use user_id for conflict resolution
+    // For anonymous users, use session_id for conflict resolution
+    const profileData = {
+      user_id: userId,
+      session_id: sessionData.id,
+      budget_min: normalizedProfile.budget.min,
+      budget_max: normalizedProfile.budget.max,
+      goals: normalizedProfile.goals.primary,
+      disciplines,
+      profile_data: normalizedProfile,
+      updated_at: new Date().toISOString(),
+    };
 
-    if (profileError) {
-      console.error("Error creating intake profile:", profileError);
+    let profileResult;
+    if (userId) {
+      // Authenticated user: upsert on user_id
+      profileResult = await supabase
+        .from("intake_profiles")
+        .upsert(profileData, {
+          onConflict: "user_id",
+        })
+        .select()
+        .single();
+    } else {
+      // Anonymous user: check if profile exists for this session, otherwise insert
+      const { data: existingProfile } = await supabase
+        .from("intake_profiles")
+        .select("*")
+        .eq("session_id", sessionData.id)
+        .single();
+
+      if (existingProfile) {
+        // Update existing profile
+        profileResult = await supabase
+          .from("intake_profiles")
+          .update(profileData)
+          .eq("session_id", sessionData.id)
+          .select()
+          .single();
+      } else {
+        // Insert new profile
+        profileResult = await supabase
+          .from("intake_profiles")
+          .insert(profileData)
+          .select()
+          .single();
+      }
+    }
+
+    if (profileResult.error) {
+      console.error("Error creating intake profile:", profileResult.error);
       throw new Error(
-        `Failed to create intake profile: ${profileError.message}`
+        `Failed to create intake profile: ${profileResult.error.message}`
       );
     }
 
+    const profileData_final = profileResult.data;
+
     return {
       success: true,
-      profile_id: profileData.id,
+      profile_id: profileData_final.id,
       normalized_profile: normalizedProfile,
     };
   } catch (error) {

@@ -9,8 +9,32 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (!error && data.user) {
+      // Ensure profile exists (trigger should create it, but double-check)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      // If profile doesn't exist, create it
+      if (!profile) {
+        const fullName = 
+          data.user.user_metadata?.full_name ||
+          data.user.user_metadata?.name ||
+          data.user.user_metadata?.preferred_username ||
+          data.user.email?.split("@")[0] ||
+          null;
+
+        await supabase.from("profiles").insert({
+          id: data.user.id,
+          full_name: fullName,
+          is_admin: false,
+        });
+      }
+
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";
       if (isLocalEnv) {
